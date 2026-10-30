@@ -1,25 +1,85 @@
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, BarChart3, Check, Compass, LogIn, Menu, ShieldCheck, Sparkles, Target, X } from "lucide-react";
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { startLogin } from "@/const";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { PRODUCT_OFFER } from "@shared/product";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Workflow, Frontend Best Practices, Design Guide and Common Pitfalls
- */
+const dimensions = ["Clareza estratégica", "Posicionamento e valor", "Clientes e mercado", "Marketing e comunicação", "Vendas", "Processos e execução", "Indicadores", "Gestão e evolução"];
+
 export default function Home() {
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+  const [, setLocation] = useLocation();
+  const { user, loading } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const start = () => {
+    if (user) setLocation("/app");
+    else startLogin();
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-[#f7f6f2] text-[#1c292b] selection:bg-[#b8ded8]">
+      <header className="sticky top-0 z-30 border-b border-[#1c292b]/10 bg-[#f7f6f2]/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-10">
+          <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3 text-left">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0d4f56] text-sm font-bold text-[#f7f6f2]">RX</span>
+            <span><span className="block font-serif text-lg leading-none">Raio-X</span><span className="block text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0d4f56]">Estratégico 360</span></span>
+          </button>
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#496062] md:flex">
+            <a href="#como-funciona" className="transition hover:text-[#0d4f56]">Como funciona</a>
+            <a href="#entrega" className="transition hover:text-[#0d4f56]">O que você recebe</a>
+            <a href="#faq" className="transition hover:text-[#0d4f56]">Dúvidas</a>
+          </nav>
+          <div className="hidden items-center gap-3 md:flex">
+            {user ? <Button variant="outline" onClick={() => setLocation("/app")} className="rounded-full border-[#0d4f56]/30">Minha área</Button> : <button onClick={() => startLogin()} className="text-sm font-semibold text-[#0d4f56]">Entrar</button>}
+            <Button onClick={start} disabled={loading} className="rounded-full bg-[#0d4f56] px-5 text-[#f7f6f2] hover:bg-[#083d43]">Começar diagnóstico <ArrowRight className="ml-2 h-4 w-4" /></Button>
+          </div>
+          <button onClick={() => setMenuOpen(value => !value)} className="rounded-xl p-2 md:hidden" aria-label="Abrir menu">{menuOpen ? <X /> : <Menu />}</button>
+        </div>
+        {menuOpen && <div className="border-t border-[#1c292b]/10 px-5 py-4 md:hidden"><div className="flex flex-col gap-4 text-sm"><a href="#como-funciona" onClick={() => setMenuOpen(false)}>Como funciona</a><a href="#entrega" onClick={() => setMenuOpen(false)}>O que você recebe</a><button className="text-left font-semibold text-[#0d4f56]" onClick={start}>Começar diagnóstico</button></div></div>}
+      </header>
+
       <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
+        <section className="relative overflow-hidden px-5 pb-24 pt-16 lg:px-10 lg:pb-32 lg:pt-24">
+          <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-[#b8ded8]/50 blur-3xl" />
+          <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.05fr_.95fr]">
+            <div className="relative">
+              <Badge variant="outline" className="mb-7 rounded-full border-[#0d4f56]/25 bg-white/40 px-4 py-1.5 font-semibold uppercase tracking-[0.16em] text-[#0d4f56]">Diagnóstico estratégico guiado</Badge>
+              <h1 className="max-w-3xl font-serif text-5xl leading-[.98] tracking-[-0.04em] text-[#183337] sm:text-6xl lg:text-7xl">Clareza para decidir <span className="text-[#0d7778]">o que vem agora.</span></h1>
+              <p className="mt-7 max-w-xl text-lg leading-8 text-[#496062]">O Raio-X Estratégico 360 organiza as informações da sua empresa, revela prioridades e transforma percepções dispersas em próximos passos mais claros.</p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Button onClick={start} size="lg" className="h-13 rounded-full bg-[#0d4f56] px-7 text-base text-white hover:bg-[#083d43]">Fazer meu diagnóstico <ArrowRight className="ml-2 h-4 w-4" /></Button><a href="#como-funciona" className="inline-flex h-13 items-center justify-center rounded-full border border-[#1c292b]/15 px-7 text-sm font-semibold text-[#1c292b] transition hover:bg-white">Entender como funciona</a></div>
+              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#627375]"><span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#0d7778]" /> Metodologia transparente</span><span className="flex items-center gap-2"><Check className="h-4 w-4 text-[#0d7778]" /> Sem benchmark inventado</span></div>
+            </div>
+            <div className="relative lg:pl-8">
+              <div className="absolute -left-4 top-10 hidden h-28 w-28 rounded-full border border-[#0d7778]/20 lg:block" /><div className="absolute -bottom-7 -right-6 hidden h-40 w-40 rounded-full border border-[#0d7778]/20 lg:block" />
+              <div className="relative rounded-[2rem] border border-[#1c292b]/10 bg-white p-5 shadow-[0_30px_80px_rgba(13,79,86,.12)] sm:p-7">
+                <div className="flex items-start justify-between border-b border-[#1c292b]/10 pb-5"><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0d7778]">Visão geral</p><h2 className="mt-2 font-serif text-2xl">Sua empresa em perspectiva</h2></div><span className="rounded-full bg-[#e8f4f0] px-3 py-1 text-xs font-semibold text-[#0d7778]">Exemplo visual</span></div>
+                <div className="grid grid-cols-[auto_1fr] items-center gap-7 py-7"><div className="relative flex h-32 w-32 items-center justify-center rounded-full" style={{ background: "conic-gradient(#0d7778 0 68%, #e5eeee 68% 100%)" }}><div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white"><span className="font-serif text-3xl">68</span><span className="text-[10px] uppercase tracking-wider text-[#627375]">de 100</span></div></div><div><p className="text-sm font-semibold text-[#183337]">Parcialmente estruturado</p><p className="mt-2 text-sm leading-6 text-[#627375]">Uma leitura inicial para entender o que já existe e onde a energia da gestão pode gerar mais clareza.</p><div className="mt-4 flex items-center gap-2 text-xs text-[#0d7778]"><span className="h-2 w-2 rounded-full bg-[#d69b53]" /> Confiança moderada</div></div></div>
+                <div className="space-y-3">{[["Clareza estratégica",82],["Clientes e mercado",71],["Processos e execução",55]].map(([label, score]) => <div key={label as string}><div className="mb-1 flex justify-between text-xs"><span className="font-medium text-[#496062]">{label}</span><span className="font-semibold text-[#0d4f56]">{score}</span></div><div className="h-2 rounded-full bg-[#e8eeee]"><div className="h-2 rounded-full bg-[#0d7778]" style={{ width: `${score}%` }} /></div></div>)}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-[#1c292b]/10 bg-[#183337] px-5 py-8 text-[#f7f6f2] lg:px-10"><div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3"><div><p className="text-3xl font-serif">8</p><p className="mt-1 text-sm text-[#b8ded8]">dimensões conectadas</p></div><div><p className="text-3xl font-serif">32</p><p className="mt-1 text-sm text-[#b8ded8]">perguntas objetivas</p></div><div><p className="text-3xl font-serif">1</p><p className="mt-1 text-sm text-[#b8ded8]">próximo passo mais claro</p></div></div></section>
+
+        <section id="como-funciona" className="px-5 py-24 lg:px-10"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d7778]">Como funciona</p><h2 className="mt-4 font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Menos achismo. Mais direção.</h2><p className="mt-5 text-lg leading-8 text-[#627375]">Uma jornada objetiva para olhar a gestão como um sistema, sem transformar sua empresa em um dashboard difícil de interpretar.</p></div><div className="mt-14 grid gap-5 md:grid-cols-3"><Step number="01" icon={<Compass />} title="Responda" text="Conte como sua empresa funciona hoje, no seu ritmo e com salvamento de progresso." /><Step number="02" icon={<BarChart3 />} title="Entenda" text="Veja uma leitura por dimensão, com lacunas sinalizadas e critérios explicados." /><Step number="03" icon={<Target />} title="Priorize" text="Receba recomendações conectadas às suas respostas e um próximo passo possível." /></div></div></section>
+
+        <section id="entrega" className="bg-[#e8f4f0] px-5 py-24 lg:px-10"><div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[.8fr_1.2fr] lg:items-start"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d7778]">O que você recebe</p><h2 className="mt-4 font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Um retrato útil para tomar decisões.</h2><p className="mt-5 text-lg leading-8 text-[#496062]">O objetivo não é produzir uma nota bonita. É mostrar o que merece atenção, o que já sustenta o próximo ciclo e onde ainda faltam informações.</p><Button onClick={start} className="mt-8 rounded-full bg-[#0d4f56] text-white hover:bg-[#083d43]">Começar agora <ArrowRight className="ml-2 h-4 w-4" /></Button></div><div className="grid gap-x-10 gap-y-7 sm:grid-cols-2">{dimensions.map((item, index) => <div key={item} className="flex gap-3 border-b border-[#0d4f56]/15 pb-5"><span className="font-mono text-xs text-[#0d7778]">0{index + 1}</span><div><h3 className="font-semibold">{item}</h3><p className="mt-1 text-sm leading-6 text-[#627375]">Uma leitura prática para conectar o tema à gestão.</p></div></div>)}</div></div></section>
+
+        <section className="px-5 py-20 lg:px-10"><div className="mx-auto grid max-w-7xl gap-8 rounded-[2rem] border border-[#0d4f56]/15 bg-white p-7 shadow-[0_18px_50px_rgba(13,79,86,.08)] sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d7778]">Oferta inicial</p><h2 className="mt-3 font-serif text-3xl">Comece pelo que precisa ficar claro.</h2><p className="mt-3 max-w-2xl leading-7 text-[#627375]">{PRODUCT_OFFER.delivery}. O valor abaixo é uma hipótese de teste e poderá ser ajustado durante a validação comercial.</p><p className="mt-4 text-sm text-[#627375]">{PRODUCT_OFFER.priceNote}</p></div><div className="lg:text-right"><p className="font-serif text-5xl text-[#0d4f56]">{PRODUCT_OFFER.priceLabel}</p><Button onClick={start} className="mt-4 rounded-full bg-[#0d4f56] text-white hover:bg-[#083d43]">Quero começar <ArrowRight className="ml-2 h-4 w-4" /></Button></div></div></section>
+
+        <section id="faq" className="px-5 py-24 lg:px-10"><div className="mx-auto max-w-4xl"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d7778]">Dúvidas frequentes</p><h2 className="mt-4 font-serif text-4xl">Antes de começar</h2><div className="mt-10 divide-y divide-[#1c292b]/10">{[["Isso é uma consultoria?","O Raio-X é um produto de diagnóstico. Ele pode indicar quando um planejamento guiado ou uma consultoria especializada fazem sentido, mas não substitui uma intervenção personalizada."],["A pontuação é um benchmark de mercado?","Não. A pontuação é uma leitura interna do instrumento, calculada a partir de critérios explícitos. O relatório mostra limitações e lacunas de informação."],["Quanto tempo leva?","O questionário foi desenhado para ser objetivo e pode ser salvo para continuar depois. O tempo varia conforme a disponibilidade das informações da empresa."],["Preciso saber gestão estratégica para responder?","Não. As perguntas usam linguagem direta e a própria escala explica o que cada resposta significa."]].map(([q,a]) => <details key={q} className="group py-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold"><span>{q}</span><span className="text-2xl font-light text-[#0d7778] transition group-open:rotate-45">+</span></summary><p className="max-w-3xl pt-4 leading-7 text-[#627375]">{a}</p></details>)}</div></div></section>
+
+        <section id="privacidade" className="border-t border-[#1c292b]/10 bg-white px-5 py-16 lg:px-10"><div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d7778]">Privacidade</p><h2 className="mt-3 font-serif text-2xl">Uso responsável das informações.</h2><p className="mt-3 text-sm leading-7 text-[#627375]">Coletamos somente dados necessários para identificar a empresa, salvar o progresso e gerar o diagnóstico. As respostas ficam vinculadas à conta autenticada e não devem conter dados pessoais sensíveis ou dados de clientes. Você pode solicitar correção ou exclusão das informações pelos canais de atendimento do projeto.</p></div><div id="termos"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0d7778]">Termos essenciais</p><h2 className="mt-3 font-serif text-2xl">O que este produto é — e não é.</h2><p className="mt-3 text-sm leading-7 text-[#627375]">O Raio-X é uma avaliação orientativa baseada nas respostas fornecidas. Não é auditoria, certificação, benchmark de mercado, parecer profissional ou garantia de resultado. O cliente é responsável pela qualidade das informações enviadas e pelas decisões tomadas a partir do relatório.</p></div></div></section>
       </main>
+      <footer className="border-t border-[#1c292b]/10 px-5 py-8 lg:px-10"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-sm text-[#627375] sm:flex-row"><span>© 2026 Raio-X Estratégico 360</span><span>Diagnóstico orientado à clareza, prioridade e ação.</span></div></footer>
     </div>
   );
+}
+
+function Step({ number, icon, title, text }: { number: string; icon: React.ReactNode; title: string; text: string }) {
+  return <div className="rounded-[1.5rem] border border-[#1c292b]/10 bg-white p-7"><div className="flex items-center justify-between"><span className="font-mono text-xs text-[#0d7778]">{number}</span><span className="text-[#0d7778]">{icon}</span></div><h3 className="mt-12 font-serif text-2xl">{title}</h3><p className="mt-3 leading-7 text-[#627375]">{text}</p></div>;
 }
