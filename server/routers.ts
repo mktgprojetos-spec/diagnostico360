@@ -10,7 +10,8 @@ import { desc, eq } from "drizzle-orm";
 
 const companyInput = z.object({
   name: z.string().min(2).max(180),
-  email: z.string().email().max(320),
+  responsibleName: z.string().min(2).max(180),
+  email: z.union([z.string().email().max(320), z.literal("")]).optional().transform(value => value || null),
   phone: z.string().min(8).max(32),
   socialUrl: z.string().max(320).optional().or(z.literal("")),
   sector: z.string().min(2).max(160),

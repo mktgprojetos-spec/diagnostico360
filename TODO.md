@@ -13,7 +13,7 @@
 
 - [x] Usar Manus OAuth e preservar o cookie `webdev_app_session`.
 - [x] Mostrar estado deslogado até a autenticação real ser concluída.
-- [x] Permitir cadastrar nome da empresa, e-mail e telefone obrigatórios, Instagram ou LinkedIn opcional, setor, porte, estágio e desafio principal.
+- [x] Permitir cadastrar Empresa, Responsável da empresa e telefone obrigatórios; E-mail e Instagram ou LinkedIn opcionais; setor selecionado em lista, porte, momento atual orientado aos pilares de decisão e desafio principal.
 - [x] Aplicar autorização no servidor e no banco.
 
 ## 3. Questionário progressivo
