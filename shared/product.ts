@@ -1,6 +1,6 @@
 export const PRODUCT_OFFER = {
   name: "Raio-X Estratégico 360",
   priceLabel: "R$ 497",
-  priceNote: "hipótese de preço para validação comercial",
+  priceNote: "Investimento: R$ 497",
   delivery: "Relatório personalizado após o preenchimento e revisão do diagnóstico",
 };
