@@ -40,7 +40,7 @@ O motor de diagnóstico ficará em módulo puro e testável no servidor. Ele rec
 - `server/routers.ts`: procedimentos públicos, protegidos e administrativos.
 - `drizzle/schema.ts`: tabelas e relações do domínio.
 - `drizzle/`: migrações geradas e versionadas.
-- `public/manus-routes.json`: manifesto de rotas.
+- `client/public/manus-routes.json`: manifesto de rotas servido pelo Vite.
 
 ## Direção de design
 
@@ -65,7 +65,7 @@ Editorial contemporâneo de negócios, com assimetria controlada e hierarquia ti
 
 ### Cores
 
-Fundo marfim e superfícies brancas para uma sensação de documento profissional. Azul petróleo como cor proprietária de ação e confiança. Verde azulado para estados positivos e âmbar para alertas de lacunas. Texto em grafite, evitando o preto absoluto.
+Fundo off-white `#FAF8F5` e superfícies brancas para uma sensação de documento profissional. Terracota `#A65E3F` como cor proprietária de ação, proximidade e decisão. Bege rosado `#F1E8E1` sustenta as áreas de apoio e o grafite `#2A2622` mantém a leitura sofisticada sem usar preto absoluto. A referência visual é editorial, quente e sóbria, sem transformar o produto amplo em uma marca de saúde ou marketing.
 
 ### Layout
 
@@ -83,7 +83,7 @@ Transições curtas de 160–220ms, sem animações decorativas. Ao trocar de et
 
 ### Tipografia
 
-Usar uma serifada editorial para títulos e uma sans-serif legível para corpo, controles e dados. Títulos compactos, com quebras intencionais; corpo entre 16 e 18px em áreas de leitura.
+Usar **Cormorant Garamond** para títulos e wordmark, com contraste editorial e quebras intencionais, e **Inter** para corpo, controles e dados. O corpo permanece entre 16 e 18px em áreas de leitura; botões e microcopy usam caixa alta e espaçamento moderado quando isso reforça a hierarquia.
 
 ### Essência da marca
 
