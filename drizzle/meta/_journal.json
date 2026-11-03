@@ -15,6 +15,13 @@
       "when": 1793330755779,
       "tag": "0001_luxuriant_mathemanic",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1793714104589,
+      "tag": "0002_graceful_penance",
+      "breakpoints": true
     }
   ]
 }
