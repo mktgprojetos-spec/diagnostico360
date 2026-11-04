@@ -19,7 +19,7 @@ const stages = [
   "Aprimorando vendas e processo comercial",
   "Organizando processos e capacidade de execução",
   "Criando indicadores para decidir melhor",
-  "Gerenciando riscos e próximos ciclos",
+  "Gerenciando riscos e próximos passos",
   "Em crescimento e buscando escala",
   "Reorganizando prioridades",
   "Consolidada e revisando a estratégia",

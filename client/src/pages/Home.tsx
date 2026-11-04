@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, BarChart3, Check, Compass, LogIn, Menu, ShieldCheck, Sparkles, Target, X } from "lucide-react";
+import { ArrowRight, BarChart3, Check, Compass, LogIn, Menu, Sparkles, Target, X } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { startLogin } from "@/const";
@@ -60,7 +60,6 @@ export default function Home() {
               <h1 className="max-w-3xl font-serif text-5xl leading-[.98] tracking-[-0.04em] text-[#2a2622] sm:text-6xl lg:text-7xl">Descubra o que está travando sua empresa <span className="text-[#a65e3f]">antes de investir mais energia.</span></h1>
               <p className="mt-7 max-w-xl text-lg leading-8 text-[#6b625c]">Em poucos passos, você organiza o contexto da empresa, identifica os pontos que merecem atenção e recebe uma leitura prática para decidir o próximo movimento com mais segurança.</p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Button onClick={start} size="lg" className="h-13 rounded-full bg-[#a65e3f] px-7 text-base text-white hover:bg-[#86472f]">Quero clareza para decidir <ArrowRight className="ml-2 h-4 w-4" /></Button><a href="#como-funciona" className="inline-flex h-13 items-center justify-center rounded-full border border-[#2a2622]/15 px-7 text-sm font-semibold text-[#2a2622] transition hover:bg-white">Entender como funciona</a></div>
-              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-[#776e68]"><span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#a65e3f]" /> Clareza sobre o próximo passo</span></div>
             </div>
             <div className="relative lg:pl-8">
               <div className="absolute -left-4 top-10 hidden h-28 w-28 rounded-full border border-[#a65e3f]/20 lg:block" /><div className="absolute -bottom-7 -right-6 hidden h-40 w-40 rounded-full border border-[#a65e3f]/20 lg:block" />
