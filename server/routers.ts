@@ -8,6 +8,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { createAssessmentCheckout } from "./stripe";
+import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
 
 const companyInput = z.object({
   name: z.string().min(2).max(180),
@@ -36,6 +37,15 @@ export const appRouter = router({
   }),
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
+    adminLogin: publicProcedure.input(z.object({ username: z.string().min(1).max(64), password: z.string().min(1).max(200) })).mutation(({ ctx, input }) => {
+      if (!verifyAdminCredentials(input.username, input.password)) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha administrativa inválidos." });
+      ctx.res.cookie(ADMIN_COOKIE_NAME, createAdminSession(), ADMIN_COOKIE_OPTIONS);
+      return { success: true as const };
+    }),
+    adminLogout: publicProcedure.mutation(({ ctx }) => {
+      ctx.res.clearCookie(ADMIN_COOKIE_NAME, { ...ADMIN_COOKIE_OPTIONS, maxAge: 0 });
+      return { success: true as const };
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });

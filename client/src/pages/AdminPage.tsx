@@ -15,7 +15,7 @@ export default function AdminPage() {
   const approve = trpc.admin.approve.useMutation({ onSuccess: () => { query.refetch(); detail.refetch(); } });
 
   if (query.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] text-sm text-[#776e68]">Carregando painel…</div>;
-  if (query.error) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] p-6"><div className="max-w-md rounded-[2rem] border border-[#b98263]/30 bg-[#f8eee8] p-8 text-center"><ShieldAlert className="mx-auto h-8 w-8 text-[#9a573c]" /><h1 className="mt-4 font-serif text-3xl">Acesso restrito</h1><p className="mt-3 text-sm leading-6 text-[#7a5545]">Este painel é reservado para administradores da metodologia.</p><a href="/app" className="mt-5 block text-sm font-semibold text-[#a65e3f]">Voltar para minha área</a></div></div>;
+  if (query.error) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] p-6"><div className="max-w-md rounded-[2rem] border border-[#b98263]/30 bg-[#f8eee8] p-8 text-center"><ShieldAlert className="mx-auto h-8 w-8 text-[#9a573c]" /><h1 className="mt-4 font-serif text-3xl">Acesso restrito</h1><p className="mt-3 text-sm leading-6 text-[#7a5545]">Entre com o usuário e a senha administrativos para acessar este painel.</p><a href="/admin-login" className="mt-5 block text-sm font-semibold text-[#a65e3f]">Ir para o login administrativo</a></div></div>;
 
   const rows = query.data ?? [];
   const selected = detail.data;

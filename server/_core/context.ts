@@ -1,6 +1,7 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
 import { sdk } from "./sdk";
+import { isAdminSessionValid } from "../adminAuth";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -18,6 +19,21 @@ export async function createContext(
   } catch (error) {
     // Authentication is optional for public procedures.
     user = null;
+  }
+
+  if (isAdminSessionValid(opts.req)) {
+    const now = new Date();
+    user = {
+      id: 0,
+      openId: "admin-password",
+      name: "Administrador",
+      email: null,
+      loginMethod: "admin_password",
+      role: "admin",
+      createdAt: now,
+      updatedAt: now,
+      lastSignedIn: now,
+    };
   }
 
   return {

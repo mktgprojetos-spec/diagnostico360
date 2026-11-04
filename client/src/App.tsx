@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import NotFound from "@/pages/NotFound";
 import AdminPage from "@/pages/AdminPage";
+import AdminLoginPage from "@/pages/AdminLoginPage";
 import AssessmentPage from "@/pages/AssessmentPage";
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/resultado/:id" component={ResultPage} />
       <Route path="/relatorio/:id" component={ReportPage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/admin-login" component={AdminLoginPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
