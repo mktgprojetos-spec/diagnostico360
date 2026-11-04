@@ -34,6 +34,10 @@ export const assessments = mysqlTable("assessments", {
   companyId: int("companyId").notNull(),
   version: varchar("version", { length: 24 }).notNull(),
   status: mysqlEnum("status", ["draft", "submitted", "in_review", "approved"]).default("draft").notNull(),
+  paymentStatus: mysqlEnum("paymentStatus", ["pending", "paid", "failed"]).default("pending").notNull(),
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
+  paidAt: timestamp("paidAt"),
   currentStep: int("currentStep").default(0).notNull(),
   overallScore: int("overallScore"),
   confidence: mysqlEnum("confidence", ["high", "moderate", "low"]),
@@ -58,6 +62,12 @@ export const assessmentReviews = mysqlTable("assessment_reviews", {
   reviewerId: int("reviewerId").notNull(),
   status: mysqlEnum("status", ["needs_review", "approved"]).notNull(),
   note: text("note"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const stripeEvents = mysqlTable("stripe_events", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  type: varchar("type", { length: 120 }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

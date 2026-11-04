@@ -2,11 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { DIAGNOSTIC_VERSION } from "@shared/diagnostic";
-import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getDb, saveAnswers, saveCompany } from "./db";
+import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getDb, saveAnswers, saveCompany, setCheckoutSession } from "./db";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
+import { createAssessmentCheckout } from "./stripe";
 
 const companyInput = z.object({
   name: z.string().min(2).max(180),
@@ -74,8 +75,22 @@ export const appRouter = router({
       const result = await saveAnswers(input.assessmentId, input.answers, 8, "submitted");
       return { submitted: true, result };
     }),
+    paymentStatus: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
+      const assessment = await requireAssessmentOwner(ctx.user.id, input.id);
+      return { paymentStatus: assessment.paymentStatus, status: assessment.status };
+    }),
+    checkout: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      if (assessment.status === "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Finalize o preenchimento do diagnóstico antes de realizar o pagamento." });
+      if (assessment.paymentStatus === "paid") return { paid: true as const, url: null };
+      const session = await createAssessmentCheckout(ctx.req, ctx.user, assessment.id);
+      if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Não foi possível iniciar o pagamento." });
+      await setCheckoutSession(assessment.id, session.id);
+      return { paid: false as const, url: session.url };
+    }),
     result: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.id);
+      if (assessment.paymentStatus !== "paid") throw new TRPCError({ code: "FORBIDDEN", message: "Conclua o pagamento para acessar o resultado completo." });
       const answers = await getAnswers(assessment.id);
       const { calculateDiagnostic } = await import("./diagnostic");
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));

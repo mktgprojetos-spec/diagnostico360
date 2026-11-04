@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { assessmentAnswers, assessmentReviews, assessments, companies, InsertUser, users } from "../drizzle/schema";
+import { assessmentAnswers, assessmentReviews, assessments, companies, InsertUser, stripeEvents, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -102,6 +102,27 @@ export async function getAssessmentById(assessmentId: number) {
   if (!db) throw new Error("Database is not available");
   const result = await db.select().from(assessments).where(eq(assessments.id, assessmentId)).limit(1);
   return result[0] ?? null;
+}
+
+export async function setCheckoutSession(assessmentId: number, sessionId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(assessments).set({ stripeCheckoutSessionId: sessionId, updatedAt: new Date() }).where(eq(assessments.id, assessmentId));
+}
+
+export async function markAssessmentPaid(assessmentId: number, paymentIntentId: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(assessments).set({ paymentStatus: "paid", stripePaymentIntentId: paymentIntentId, paidAt: new Date(), updatedAt: new Date() }).where(eq(assessments.id, assessmentId));
+}
+
+export async function recordStripeEvent(eventId: string, type: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existing = await db.select({ id: stripeEvents.id }).from(stripeEvents).where(eq(stripeEvents.id, eventId)).limit(1);
+  if (existing.length > 0) return false;
+  await db.insert(stripeEvents).values({ id: eventId, type });
+  return true;
 }
 
 export async function getAnswers(assessmentId: number) {

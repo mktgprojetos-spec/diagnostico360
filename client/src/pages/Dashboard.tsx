@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Building2, ClipboardCheck, LogIn, LogOut, Plus, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { startLogin } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -34,6 +34,10 @@ export default function Dashboard() {
   const saveCompany = trpc.company.save.useMutation({ onSuccess: () => { setEditingCompany(false); companyQuery.refetch(); listQuery.refetch(); } });
   const createAssessment = trpc.assessment.create.useMutation({ onSuccess: assessment => setLocation(`/diagnostico?id=${assessment.id}`) });
   const [form, setForm] = useState({ name: "", responsibleName: "", email: "", phone: "", socialUrl: "", sector: sectors[0], size: sizes[1], stage: stages[0], challenge: "" });
+  useEffect(() => {
+    const existing = companyQuery.data;
+    if (existing) setForm({ name: existing.name, responsibleName: existing.responsibleName ?? "", email: existing.email ?? "", phone: existing.phone ?? "", socialUrl: existing.socialUrl ?? "", sector: existing.sector, size: existing.size, stage: existing.stage, challenge: existing.challenge });
+  }, [companyQuery.data?.id]);
 
   if (loading) return <Loading />;
   if (!user) return <LoginCard />;
@@ -41,8 +45,7 @@ export default function Dashboard() {
   if (companyQuery.isLoading) return <Loading />;
   if (!companyQuery.data || !companyQuery.data.responsibleName || !companyQuery.data.phone || editingCompany) {
     const existing = companyQuery.data;
-    const formWithExisting = existing ? { ...form, name: existing.name, responsibleName: existing.responsibleName ?? "", email: existing.email ?? "", phone: existing.phone ?? "", socialUrl: existing.socialUrl ?? "", sector: existing.sector, size: existing.size, stage: existing.stage, challenge: existing.challenge } : form;
-    return <CompanyForm form={formWithExisting} setForm={setForm} onSubmit={() => saveCompany.mutate(formWithExisting)} pending={saveCompany.isPending} editing={Boolean(existing)} />;
+    return <CompanyForm form={form} setForm={setForm} onSubmit={() => saveCompany.mutate(form)} pending={saveCompany.isPending} editing={Boolean(existing)} />;
   }
 
   const company = companyQuery.data;

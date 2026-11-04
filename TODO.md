@@ -46,6 +46,9 @@
 - [x] Manter histórico das avaliações do cliente.
 - [x] Permitir editar e reenviar o Raio-X a partir do resultado ou do histórico.
 - [x] Exibir CTA de agendamento do Planejamento Estratégico Guiado para o WhatsApp +55 14 99675-5751.
+- [x] Bloquear pontuação, prioridades e relatório até a confirmação do pagamento de R$ 497.
+- [x] Disponibilizar pagamento à vista ou em 12x de R$ 41,42 no cartão via Stripe.
+- [x] Preservar a digitação dos campos Empresa e E-mail durante o cadastro e edição.
 
 ## 6. Revisão administrativa
 
