@@ -4,15 +4,20 @@ import { ArrowRight, CheckCircle2, Download, Info, LockKeyhole, Printer, Refresh
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export default function ResultPage({ params }: { params: { id: string } }) {
   const [, setLocation] = useLocation();
   const id = Number(params.id);
   const checkoutWindow = useRef<Window | null>(null);
   const paymentQuery = trpc.assessment.paymentStatus.useQuery({ id }, { retry: false, refetchInterval: 3000 });
+  const sessionId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("session_id") : null;
+  const confirmPayment = trpc.assessment.confirmPayment.useMutation({ onSuccess: () => paymentQuery.refetch(), onError: error => toast.error(error.message) });
   const checkout = trpc.assessment.checkout.useMutation({ onSuccess: result => { if (result.url) { if (checkoutWindow.current) checkoutWindow.current.location.href = result.url; else window.location.href = result.url; toast.success("Checkout aberto em uma nova aba."); } else { paymentQuery.refetch(); } }, onError: error => { checkoutWindow.current?.close(); toast.error(error.message); } });
   const query = trpc.assessment.result.useQuery({ id }, { enabled: paymentQuery.data?.paymentStatus === "paid", retry: false });
+  useEffect(() => {
+    if (sessionId && paymentQuery.data?.paymentStatus !== "paid" && !confirmPayment.isPending) confirmPayment.mutate({ assessmentId: id, sessionId });
+  }, [id, sessionId, paymentQuery.data?.paymentStatus]);
   if (paymentQuery.isLoading) return <Loading />;
   if (paymentQuery.isError) return <ErrorState />;
   if (paymentQuery.data?.paymentStatus !== "paid") return <PaymentGate onCheckout={() => { checkoutWindow.current = window.open("about:blank", "_blank"); checkout.mutate({ assessmentId: id }); }} pending={checkout.isPending} />;

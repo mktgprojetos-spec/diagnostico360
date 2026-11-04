@@ -40,7 +40,7 @@ export async function createAssessmentCheckout(req: Request, user: { id: number;
       customer_name: user.name ?? "",
       customer_email: user.email ?? "",
     },
-    success_url: `${origin}/resultado/${assessmentId}?payment=success`,
+    success_url: `${origin}/resultado/${assessmentId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/resultado/${assessmentId}?payment=cancel`,
   });
   return session;
@@ -82,6 +82,14 @@ export async function handleStripeWebhook(req: Request, res: Response) {
   }
 
   return res.json({ received: true });
+}
+
+export async function confirmAssessmentCheckout(sessionId: string, assessmentId: number) {
+  const session = await stripeClient().checkout.sessions.retrieve(sessionId);
+  const sessionAssessmentId = Number(session.metadata?.assessment_id);
+  if (sessionAssessmentId !== assessmentId || session.payment_status !== "paid") return false;
+  await markAssessmentPaid(assessmentId, typeof session.payment_intent === "string" ? session.payment_intent : null);
+  return true;
 }
 
 export { PRICE_IN_CENTS };

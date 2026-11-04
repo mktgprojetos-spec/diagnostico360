@@ -7,7 +7,7 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
-import { createAssessmentCheckout } from "./stripe";
+import { confirmAssessmentCheckout, createAssessmentCheckout } from "./stripe";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
 
 const companyInput = z.object({
@@ -88,6 +88,11 @@ export const appRouter = router({
     paymentStatus: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.id);
       return { paymentStatus: assessment.paymentStatus, status: assessment.status };
+    }),
+    confirmPayment: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), sessionId: z.string().min(10).max(255) })).mutation(async ({ ctx, input }) => {
+      await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      const paid = await confirmAssessmentCheckout(input.sessionId, input.assessmentId);
+      return { paid };
     }),
     checkout: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
