@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { assessmentAnswers, assessmentReviews, assessments, companies, InsertUser, stripeEvents, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -154,6 +154,13 @@ export async function getAssessmentsForUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
   return db.select().from(assessments).where(eq(assessments.userId, userId)).orderBy(desc(assessments.updatedAt));
+}
+
+export async function getLatestSubmittedAssessment(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const result = await db.select().from(assessments).where(and(eq(assessments.userId, userId), isNotNull(assessments.submittedAt))).orderBy(desc(assessments.submittedAt)).limit(1);
+  return result[0] ?? null;
 }
 
 export async function addReview(assessmentId: number, reviewerId: number, status: "needs_review" | "approved", note: string | null) {

@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Building2, ClipboardCheck, LogIn, LogOut, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, Building2, ClipboardCheck, LogIn, LogOut, Mail, Plus, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { startLogin } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 const sectors = ["Serviços", "Comércio e varejo", "Indústria", "Tecnologia", "Educação", "Construção e imobiliário", "Alimentação e hospitalidade", "Saúde e bem-estar", "Agronegócio", "Finanças e contabilidade", "Comunicação e marketing", "Outro"];
 const sizes = ["1–5 pessoas", "6–20 pessoas", "21–50 pessoas", "51–200 pessoas", "Mais de 200 pessoas"];
@@ -25,6 +26,11 @@ const stages = [
   "Consolidada e revisando a estratégia",
 ];
 
+const ADMIN_EMAIL = "taynaracampos@hotmail.com";
+const MATURATION_DAYS = 90;
+const maturationDate = (date: Date | string) => new Date(new Date(date).getTime() + MATURATION_DAYS * 24 * 60 * 60 * 1000);
+const requestEmail = (subject: string, body: string) => `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
 export default function Dashboard() {
   const { user, loading, logout } = useAuth();
   const [, setLocation] = useLocation();
@@ -32,7 +38,7 @@ export default function Dashboard() {
   const listQuery = trpc.assessment.list.useQuery(undefined, { enabled: Boolean(user && companyQuery.data), retry: false });
   const [editingCompany, setEditingCompany] = useState(false);
   const saveCompany = trpc.company.save.useMutation({ onSuccess: () => { setEditingCompany(false); companyQuery.refetch(); listQuery.refetch(); } });
-  const createAssessment = trpc.assessment.create.useMutation({ onSuccess: assessment => setLocation(`/diagnostico?id=${assessment.id}`) });
+  const createAssessment = trpc.assessment.create.useMutation({ onSuccess: assessment => setLocation(`/diagnostico?id=${assessment.id}`), onError: error => toast.error(error.message) });
   const [form, setForm] = useState({ name: "", responsibleName: "", email: "", phone: "", socialUrl: "", sector: sectors[0], size: sizes[1], stage: stages[0], challenge: "" });
   useEffect(() => {
     const existing = companyQuery.data;
@@ -51,12 +57,15 @@ export default function Dashboard() {
   const company = companyQuery.data;
   const assessments = listQuery.data ?? [];
   const latest = assessments[0];
+  const latestSubmitted = assessments.find(item => item.submittedAt);
+  const nextAssessmentDate = latestSubmitted?.submittedAt ? maturationDate(latestSubmitted.submittedAt) : null;
+  const canCreateAssessment = !nextAssessmentDate || new Date() >= nextAssessmentDate;
 
   return <AppShell user={user} logout={logout} current="Minha área">
     <div className="mx-auto max-w-6xl space-y-8">
       <section className="rounded-[2rem] bg-[#2a2622] p-7 text-[#faf8f5] sm:p-10"><div className="flex flex-col justify-between gap-8 md:flex-row md:items-end"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#eadfd6]">Minha área</p><h1 className="mt-4 max-w-xl font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Olá, {user.name?.split(" ")[0] ?? "por aqui"}.</h1><p className="mt-4 max-w-xl leading-7 text-[#dfd5ce]">Vamos transformar o contexto de {company.name} em clareza sobre o que merece atenção agora.</p></div><Button onClick={() => latest ? (latest.status === "draft" ? setLocation(`/diagnostico?id=${latest.id}`) : setLocation(`/resultado/${latest.id}`)) : createAssessment.mutate()} disabled={createAssessment.isPending} className="rounded-full bg-[#eadfd6] text-[#2a2622] hover:bg-[#f1e8e1]"><Plus className="mr-2 h-4 w-4" /> {latest ? (latest.status === "draft" ? "Continuar diagnóstico" : "Ver último resultado") : "Iniciar diagnóstico"}</Button></div></section>
       <section className="grid gap-5 md:grid-cols-3"><Metric label="Empresa" value={company.name} icon={<Building2 />} /><Metric label="Avaliações" value={String(assessments.length).padStart(2, "0")} icon={<ClipboardCheck />} /><div className="rounded-[1.5rem] border border-[#2a2622]/10 bg-white p-6"><div className="flex items-center justify-between text-[#a65e3f]"><span className="text-xs font-bold uppercase tracking-[0.17em] text-[#776e68]">Último status</span><RefreshCw className="h-4 w-4" /></div><p className="mt-4 truncate font-serif text-2xl">{latest ? statusLabel(latest.status) : "Ainda não iniciado"}</p><button onClick={() => setEditingCompany(true)} className="mt-3 text-xs font-semibold text-[#a65e3f] hover:underline">Editar dados e contatos</button></div></section>
-      <section className="rounded-[1.5rem] border border-[#2a2622]/10 bg-white p-6 sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Histórico</p><h2 className="mt-2 font-serif text-3xl">Suas avaliações</h2></div><button onClick={() => { companyQuery.refetch(); listQuery.refetch(); }} className="rounded-full p-2 text-[#776e68] hover:bg-[#f1e8e1]" aria-label="Atualizar"><RefreshCw className="h-4 w-4" /></button></div>{assessments.length === 0 ? <div className="mt-8 rounded-2xl bg-[#faf8f5] p-8 text-center"><p className="font-medium">Seu primeiro diagnóstico ainda não começou.</p><p className="mt-2 text-sm text-[#776e68]">Responda às perguntas no seu ritmo e salve para continuar depois.</p></div> : <div className="mt-7 space-y-3">{assessments.map(item => <button key={item.id} onClick={() => setLocation(item.status === "draft" ? `/diagnostico?id=${item.id}` : `/resultado/${item.id}`)} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-[#2a2622]/10 p-4 text-left transition hover:border-[#a65e3f]/40 hover:bg-[#faf8f5]"><div><p className="font-semibold">Raio-X Estratégico 360 <span className="ml-2 font-mono text-xs text-[#776e68]">#{String(item.id).padStart(4, "0")}</span></p><p className="mt-1 text-sm text-[#776e68]">Atualizado em {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("pt-BR") : "—"}</p></div><div className="flex items-center gap-3"><Badge variant={item.status === "approved" ? "default" : "outline"}>{statusLabel(item.status)}</Badge><ArrowRight className="h-4 w-4 text-[#a65e3f]" /></div></button>)}</div>}</section>
+      <section className="rounded-[1.5rem] border border-[#2a2622]/10 bg-white p-6 sm:p-8"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Histórico</p><h2 className="mt-2 font-serif text-3xl">Suas avaliações</h2><p className="mt-2 max-w-xl text-sm leading-6 text-[#776e68]">Cada Raio-X é uma fotografia do momento da empresa. Uma nova avaliação é um documento independente, com novo pagamento, recomendada após 90 dias de maturação.</p></div><Button onClick={() => createAssessment.mutate()} disabled={!canCreateAssessment || createAssessment.isPending || Boolean(latest?.status === "draft")} className="shrink-0 rounded-full bg-[#a65e3f] text-white hover:bg-[#86472f]"><Plus className="mr-2 h-4 w-4" /> Criar novo Raio-X</Button></div>{nextAssessmentDate && !canCreateAssessment && <div className="mt-5 rounded-2xl border border-[#a65e3f]/20 bg-[#f1e8e1] p-4 text-sm leading-6 text-[#625851]">Uma nova avaliação estará disponível a partir de <strong>{nextAssessmentDate.toLocaleDateString("pt-BR")}</strong>. Para revisar cenários, prioridades ou decisões antes desse prazo, <a className="font-semibold text-[#a65e3f] underline" href="https://wa.me/5514996755751?text=Ol%C3%A1%2C%20Taynara!%20Quero%20agendar%20um%20Planejamento%20Estrat%C3%A9gico%20para%20revisar%20meu cen%C3%A1rio.">agende o Planejamento Estratégico</a>.</div>}{latest?.status === "draft" && <div className="mt-5 rounded-2xl border border-[#2a2622]/10 bg-[#faf8f5] p-4 text-sm text-[#625851]">Você possui um diagnóstico em andamento. Finalize-o antes de iniciar uma nova avaliação.</div>}{assessments.length === 0 ? <div className="mt-8 rounded-2xl bg-[#faf8f5] p-8 text-center"><p className="font-medium">Seu primeiro diagnóstico ainda não começou.</p><p className="mt-2 text-sm text-[#776e68]">Responda às perguntas no seu ritmo e salve para continuar depois.</p></div> : <div className="mt-7 space-y-3">{assessments.map(item => <button key={item.id} onClick={() => setLocation(item.status === "draft" ? `/diagnostico?id=${item.id}` : `/resultado/${item.id}`)} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-[#2a2622]/10 p-4 text-left transition hover:border-[#a65e3f]/40 hover:bg-[#faf8f5]"><div><p className="font-semibold">Raio-X Estratégico 360 <span className="ml-2 font-mono text-xs text-[#776e68]">#{String(item.id).padStart(4, "0")}</span></p><p className="mt-1 text-sm text-[#776e68]">{item.submittedAt ? `Concluído em ${new Date(item.submittedAt).toLocaleDateString("pt-BR")}` : `Atualizado em ${item.updatedAt ? new Date(item.updatedAt).toLocaleDateString("pt-BR") : ""}`}</p></div><div className="flex items-center gap-3"><Badge variant={item.status === "approved" ? "default" : "outline"}>{statusLabel(item.status)}</Badge><ArrowRight className="h-4 w-4 text-[#a65e3f]" /></div></button>)}</div>}<a className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#a65e3f]" href={requestEmail("Solicitação administrativa | Raio-X Estratégico 360", "Olá, Taynara.\n\nGostaria de solicitar uma correção ou análise excepcional do meu diagnóstico.\n\nEmpresa:\nAvaliação:\nMotivo:\n\nObrigado.")}><Mail className="h-4 w-4" /> Solicitar correção ou análise de mudança relevante</a></section>
     </div>
   </AppShell>;
 }

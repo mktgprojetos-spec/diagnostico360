@@ -92,7 +92,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   return <div className="min-h-screen bg-[#eeeae5] text-[#2a2622]">
     <div className="print:hidden mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-5 py-5">
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" onClick={() => setLocation(`/diagnostico?id=${id}`)} className="rounded-full">Editar Raio-X</Button>
+        <a href={`mailto:taynaracampos@hotmail.com?subject=${encodeURIComponent("Solicitação de correção | Raio-X Estratégico 360")}&body=${encodeURIComponent(`Olá, Taynara.\n\nGostaria de solicitar uma correção na avaliação #${id}.\n\nMotivo:\n`)}`} className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Solicitar correção</a>
         <Button variant="outline" onClick={() => setLocation(`/resultado/${id}`)} className="rounded-full"><ArrowLeft className="mr-2 h-4 w-4" /> Resultado</Button>
         <a href={whatsappUrl} target="_blank" rel="noreferrer" className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Agendar planejamento</a>
         <Button onClick={() => window.print()} className="rounded-full bg-[#a65e3f] text-white hover:bg-[#86472f]"><Printer className="mr-2 h-4 w-4" /> Imprimir / salvar PDF</Button>

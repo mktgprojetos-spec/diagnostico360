@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { DIAGNOSTIC_VERSION } from "@shared/diagnostic";
-import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getDb, saveAnswers, saveCompany, setCheckoutSession } from "./db";
+import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments } from "../drizzle/schema";
@@ -68,6 +68,11 @@ export const appRouter = router({
     create: protectedProcedure.mutation(async ({ ctx }) => {
       const company = await getCompanyForUser(ctx.user.id);
       if (!company) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Cadastre a empresa antes de iniciar." });
+      const latestSubmitted = await getLatestSubmittedAssessment(ctx.user.id);
+      if (latestSubmitted?.submittedAt) {
+        const availableAt = latestSubmitted.submittedAt.getTime() + 90 * 24 * 60 * 60 * 1000;
+        if (Date.now() < availableAt) throw new TRPCError({ code: "PRECONDITION_FAILED", message: `Uma nova avaliação estará disponível a partir de ${new Date(availableAt).toLocaleDateString("pt-BR")}. Para revisar cenários antes disso, agende o Planejamento Estratégico.` });
+      }
       return createAssessment(ctx.user.id, company.id, DIAGNOSTIC_VERSION);
     }),
     get: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
@@ -76,12 +81,14 @@ export const appRouter = router({
       return { assessment, answers };
     }),
     save: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput, currentStep: z.number().int().min(0).max(8) })).mutation(async ({ ctx, input }) => {
-      await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      if (assessment.status !== "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Este diagnóstico já foi finalizado. Para corrigir uma informação, envie uma solicitação administrativa." });
       const result = await saveAnswers(input.assessmentId, input.answers, input.currentStep, "draft");
       return { saved: true, result };
     }),
     submit: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput })).mutation(async ({ ctx, input }) => {
-      await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      if (assessment.status !== "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Este diagnóstico já foi finalizado." });
       const result = await saveAnswers(input.assessmentId, input.answers, 8, "submitted");
       return { submitted: true, result };
     }),
