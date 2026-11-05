@@ -49,6 +49,12 @@
 - [x] Bloquear pontuação, prioridades e relatório até a confirmação do pagamento de R$ 497.
 - [x] Disponibilizar pagamento à vista ou em 12x de R$ 41,42 no cartão via Stripe.
 - [x] Preservar a digitação dos campos Empresa e E-mail durante o cadastro e edição.
+- [x] Incluir síntese executiva personalizada com leitura do momento, principal atenção e nível de confiança.
+- [x] Incluir padrão central identificado para conectar as notas em uma interpretação estratégica.
+- [x] Incluir matriz de prioridades com impacto, urgência, justificativa e próxima ação.
+- [x] Incluir três movimentos recomendados para os próximos 30 dias, com resultado esperado.
+- [x] Incluir perguntas estratégicas para orientar a conversa da liderança.
+- [x] Diferenciar claramente o que o diagnóstico entrega do que será construído no Planejamento Estratégico Guiado.
 
 ## 6. Revisão administrativa
 
