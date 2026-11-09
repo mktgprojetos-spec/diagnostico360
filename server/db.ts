@@ -131,7 +131,7 @@ export async function getAnswers(assessmentId: number) {
   return db.select().from(assessmentAnswers).where(eq(assessmentAnswers.assessmentId, assessmentId));
 }
 
-export async function saveAnswers(assessmentId: number, answers: Record<string, number | null>, currentStep: number, status: "draft" | "submitted") {
+export async function saveAnswers(assessmentId: number, answers: Record<string, number | null>, currentStep: number, status: "draft" | "submitted", context?: { contextMoments: string[]; contextChallenge: string; contextExpectation: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
   await db.delete(assessmentAnswers).where(eq(assessmentAnswers.assessmentId, assessmentId));
@@ -144,6 +144,7 @@ export async function saveAnswers(assessmentId: number, answers: Record<string, 
     status,
     overallScore: result.overallScore,
     confidence: result.confidence,
+    ...(context ? { contextMoments: JSON.stringify(context.contextMoments), contextChallenge: context.contextChallenge, contextExpectation: context.contextExpectation } : {}),
     submittedAt: status === "submitted" ? new Date() : undefined,
     updatedAt: new Date(),
   }).where(eq(assessments.id, assessmentId));

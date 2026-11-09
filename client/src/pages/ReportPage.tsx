@@ -87,12 +87,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const summary = getExecutiveSummary(result.overallScore, result.confidenceLabel, priorities);
   const centralPattern = getCentralPattern(dimensions, priorities);
   const moves = getThirtyDayMoves(priorities);
-  const whatsappUrl = "https://wa.me/5514996755751?text=Ol%C3%A1%2C%20Taynara!%20Quero%20agendar%20meu%20planejamento%20estrat%C3%A9gico%20a%20partir%20do%20meu%20Raio-X%20360.";
+  const contextMoments = assessment.contextMoments ? JSON.parse(assessment.contextMoments) as string[] : [];
+  const whatsappUrl = "https://wa.me/5514996755751?text=Ol%C3%A1%2C%20Taynara!%20Quero%20agendar%20meu%20planejamento%20estrat%C3%A9gico%20a%20partir%20do%20meu%20Diagnóstico%20360.";
 
   return <div className="min-h-screen bg-[#eeeae5] text-[#2a2622]">
     <div className="print:hidden mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-5 py-5">
       <div className="flex flex-wrap gap-2">
-        <a href={`mailto:taynaracampos@hotmail.com?subject=${encodeURIComponent("Solicitação de correção | Raio-X Estratégico 360")}&body=${encodeURIComponent(`Olá, Taynara.\n\nGostaria de solicitar uma correção na avaliação #${id}.\n\nMotivo:\n`)}`} className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Solicitar correção</a>
+        <a href={`mailto:taynaracampos@hotmail.com?subject=${encodeURIComponent("Solicitação de correção | Diagnóstico 360")}&body=${encodeURIComponent(`Olá, Taynara.\n\nGostaria de solicitar uma correção na avaliação #${id}.\n\nMotivo:\n`)}`} className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Solicitar correção</a>
         <Button variant="outline" onClick={() => setLocation(`/resultado/${id}`)} className="rounded-full"><ArrowLeft className="mr-2 h-4 w-4" /> Resultado</Button>
         <a href={whatsappUrl} target="_blank" rel="noreferrer" className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Agendar planejamento</a>
         <Button onClick={() => window.print()} className="rounded-full bg-[#a65e3f] text-white hover:bg-[#86472f]"><Printer className="mr-2 h-4 w-4" /> Imprimir / salvar PDF</Button>
@@ -102,7 +103,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     <article className="mx-auto max-w-4xl bg-white px-8 py-12 shadow-sm sm:px-14 sm:py-16 print:max-w-none print:shadow-none">
       <header className="border-b-2 border-[#a65e3f] pb-10">
         <div className="flex items-start justify-between gap-6">
-          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Raio-X Estratégico 360</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">Avaliação #{String(assessment.id).padStart(4, "0")} · versão {assessment.version}</p></div>
+          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Diagnóstico 360</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">Avaliação #{String(assessment.id).padStart(4, "0")} · versão {assessment.version}</p></div>
           <div className="text-right text-sm text-[#776e68]"><p>Data</p><p className="font-semibold text-[#2a2622]">{new Date().toLocaleDateString("pt-BR")}</p></div>
         </div>
       </header>
@@ -116,6 +117,13 @@ export default function ReportPage({ params }: { params: { id: string } }) {
           <Metric label="Confiança" value={result.confidenceLabel} />
           <Metric label="Completude" value={`${result.completionPercent}%`} />
         </div>
+      </section>
+
+      <section className="border-b border-[#2a2622]/10 py-10">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Contexto informado</p>
+        <h2 className="mt-3 font-serif text-3xl">O cenário desta avaliação</h2>
+        <div className="mt-6 grid gap-5 sm:grid-cols-3"><div className="rounded-2xl bg-[#f1e8e1] p-5"><p className="text-xs font-semibold uppercase tracking-wide text-[#a65e3f]">Momento atual</p><div className="mt-3 space-y-2 text-sm leading-6 text-[#625851]">{contextMoments.length > 0 ? contextMoments.map(moment => <p key={moment}>• {moment}</p>) : <p>Não informado nesta versão.</p>}</div></div><div className="rounded-2xl border border-[#2a2622]/10 p-5 sm:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-[#a65e3f]">Desafio declarado</p><p className="mt-3 text-sm leading-6 text-[#625851]">{assessment.contextChallenge || "Não informado nesta versão."}</p><p className="mt-5 text-xs font-semibold uppercase tracking-wide text-[#a65e3f]">O que a empresa espera compreender</p><p className="mt-3 text-sm leading-6 text-[#625851]">{assessment.contextExpectation || "Não informado nesta versão."}</p></div></div>
+        <p className="mt-4 text-xs leading-5 text-[#776e68]">O contexto ajuda a interpretar a leitura, mas não altera automaticamente as pontuações calculadas pelas respostas objetivas.</p>
       </section>
 
       <section className="border-b border-[#2a2622]/10 py-10">
@@ -163,7 +171,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       <section className="border-b border-[#2a2622]/10 py-10"><div className="flex gap-3"><CircleAlert className="mt-1 h-5 w-5 shrink-0 text-[#a65e3f]" /><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Lacunas e confiança</p><p className="mt-3 leading-7 text-[#776e68]">A confiança considera a quantidade e a consistência das respostas disponíveis. Informações não respondidas permanecem como lacunas e devem ser consideradas antes de decisões relevantes.</p>{result.gaps.length > 0 && <ul className="mt-4 space-y-2 text-sm text-[#776e68]">{result.gaps.map(gap => <li key={gap}>• {gap}</li>)}</ul>}</div></div></section>
 
       <section className="py-10"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Metodologia e limitações</p><p className="mt-4 leading-7 text-[#776e68]">As notas foram calculadas por média das respostas pontuadas em cada dimensão. A pontuação geral utiliza as dimensões com informação suficiente. A classificação é própria deste instrumento, não é benchmark de mercado e não representa auditoria, certificação, parecer profissional ou garantia de desempenho. O relatório tem como objetivo guiar ações e organizar prioridades. Para um parecer profissional e personalizado, é necessário seguir com o Planejamento Estratégico.</p></section>
-      <footer className="border-t border-[#2a2622]/10 pt-6 text-xs text-[#776e68]">Raio-X Estratégico 360 · Diagnóstico orientado à clareza, prioridade e ação.</footer>
+      <footer className="border-t border-[#2a2622]/10 pt-6 text-xs text-[#776e68]">Diagnóstico 360 · Diagnóstico orientado à clareza, prioridade e ação.</footer>
     </article>
   </div>;
 }

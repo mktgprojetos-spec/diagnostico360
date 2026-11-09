@@ -1,4 +1,4 @@
-# TODO — MVP Raio-X Estratégico 360
+# TODO — MVP Diagnóstico 360
 
 ## 1. Landing page e oferta
 
@@ -13,7 +13,7 @@
 
 - [x] Usar Manus OAuth e preservar o cookie `webdev_app_session`.
 - [x] Mostrar estado deslogado até a autenticação real ser concluída.
-- [x] Permitir cadastrar Empresa, Responsável da empresa e telefone obrigatórios; E-mail e Instagram ou LinkedIn opcionais; setor selecionado em lista, porte, momento atual orientado aos pilares de decisão e desafio principal.
+- [x] Permitir cadastrar Empresa, Responsável da empresa e telefone obrigatórios; E-mail e Instagram ou LinkedIn opcionais; setor e porte estáveis selecionados em lista.
 - [x] Aplicar autorização no servidor e no banco.
 
 ## 3. Questionário progressivo
@@ -44,7 +44,7 @@
 - [x] Exibir próximos passos e solução complementar.
 - [x] Permitir imprimir ou salvar o relatório em PDF pelo navegador.
 - [x] Manter histórico das avaliações do cliente.
-- [x] Permitir editar e reenviar o Raio-X a partir do resultado ou do histórico.
+- [x] Manter rascunhos editáveis, fechar avaliações finalizadas e encaminhar correções administrativas para análise.
 - [x] Exibir CTA de agendamento do Planejamento Estratégico Guiado para o WhatsApp +55 14 99675-5751.
 - [x] Bloquear pontuação, prioridades e relatório até a confirmação do pagamento de R$ 497.
 - [x] Disponibilizar pagamento à vista ou em 12x de R$ 41,42 no cartão via Stripe.
@@ -55,6 +55,8 @@
 - [x] Incluir três movimentos recomendados para os próximos 30 dias, com resultado esperado.
 - [x] Incluir perguntas estratégicas para orientar a conversa da liderança.
 - [x] Diferenciar claramente o que o diagnóstico entrega do que será construído no Planejamento Estratégico Guiado.
+- [x] Coletar em cada avaliação até três momentos atuais, o desafio principal e a expectativa do lead.
+- [x] Preservar o contexto de cada avaliação no histórico e exibi-lo no relatório sem alterar automaticamente a pontuação objetiva.
 
 ## 6. Revisão administrativa
 

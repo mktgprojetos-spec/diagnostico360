@@ -49,6 +49,53 @@ function nextStepFor(dimensionId: string) {
   return steps[dimensionId] ?? "Escolha uma iniciativa prioritária e defina o próximo passo.";
 }
 
+function reasonFor(dimensionId: string, score: number, label: string) {
+  const band = score < 50 ? "initial" : score < 75 ? "developing" : "structured";
+  const reasons: Record<string, Record<string, string>> = {
+    strategy: {
+      initial: "Os objetivos ainda não parecem funcionar como critério comum para escolher prioridades, direcionar recursos e dizer não ao que dispersa a empresa.",
+      developing: "Existe uma direção em construção, mas a ordem dos objetivos e sua conexão com as decisões do dia a dia ainda podem ganhar mais clareza.",
+      structured: "A empresa demonstra uma direção relativamente clara. O próximo ganho está em manter as escolhas vivas nas decisões e revisá-las quando o contexto mudar.",
+    },
+    positioning: {
+      initial: "A proposta de valor ainda pode estar ampla demais, dificultando explicar o problema resolvido, o público prioritário e o motivo de escolha.",
+      developing: "A empresa já apresenta elementos de diferenciação, mas precisa conectá-los melhor à mensagem, ao público e à experiência que entrega.",
+      structured: "O posicionamento aparece bem encaminhado. O cuidado agora é garantir que a promessa percebida pelo cliente continue coerente com a entrega real.",
+    },
+    market: {
+      initial: "As decisões sobre clientes e oportunidades parecem depender mais de percepção interna do que de uma leitura organizada das necessidades e critérios de compra.",
+      developing: "Há conhecimento relevante sobre o mercado, mas ainda falta transformar aprendizados de clientes em escolhas consistentes de oferta e foco.",
+      structured: "A empresa demonstra boa proximidade com clientes e mercado. O próximo passo é usar essa leitura para antecipar mudanças e proteger oportunidades relevantes.",
+    },
+    marketing: {
+      initial: "As ações de comunicação podem estar acontecendo sem uma ligação suficientemente clara entre público, mensagem, canal e resultado esperado.",
+      developing: "O marketing possui iniciativas em andamento, mas pode ganhar eficiência ao relacionar cada canal a um objetivo e a um sinal concreto de avanço.",
+      structured: "A comunicação apresenta uma base consistente. O foco deve ser melhorar a atribuição de resultados e manter coerência entre promessa, oferta e experiência.",
+    },
+    sales: {
+      initial: "O processo comercial ainda parece depender de esforço individual, sem etapas, critérios e próximos passos suficientemente visíveis para gerar previsibilidade.",
+      developing: "Existe um processo comercial parcialmente definido, mas pontos como qualificação, conversão e motivos de perda ainda podem orientar melhor as decisões.",
+      structured: "O processo comercial está relativamente organizado. A oportunidade está em transformar os dados de conversão e perda em ajustes contínuos de abordagem e oferta.",
+    },
+    operations: {
+      initial: "A execução pode estar concentrada em poucas pessoas e sujeita a retrabalho, gargalos ou dependências que dificultam transformar prioridades em entrega.",
+      developing: "A operação sustenta parte das prioridades, mas responsabilidades, capacidade e gargalos ainda precisam ser conectados para evitar perda de ritmo.",
+      structured: "A capacidade de execução aparece como uma base favorável. O próximo avanço é proteger os processos críticos e alinhar recursos às prioridades escolhidas.",
+    },
+    metrics: {
+      initial: "Faltam sinais simples e recorrentes para saber se as decisões estão produzindo avanço, o que pode fazer a liderança reagir tarde aos desvios.",
+      developing: "A empresa acompanha alguns números, mas ainda pode aproximar indicadores dos objetivos e transformar desvios em decisões registradas.",
+      structured: "Os indicadores já apoiam parte das decisões. O ganho adicional está em reduzir o excesso de informação e concentrar o acompanhamento no que muda escolhas.",
+    },
+    evolution: {
+      initial: "O acompanhamento da estratégia parece ocorrer de forma irregular, dificultando registrar decisões, aprender com iniciativas e reagir a mudanças relevantes.",
+      developing: "Existem práticas de acompanhamento, mas elas ainda podem ganhar ritmo, pauta e registro para transformar reuniões em decisões e aprendizados.",
+      structured: "A empresa demonstra capacidade de acompanhar e adaptar sua direção. O cuidado é preservar o registro dos aprendizados e das decisões que sustentam a evolução.",
+    },
+  };
+  return reasons[dimensionId]?.[band] ?? `As respostas colocam esta dimensão na faixa ${label.toLowerCase()} e indicam um ponto de atenção para a próxima decisão.`;
+}
+
 export function calculateDiagnostic(answerMap: Record<string, AnswerValue>): DiagnosticResult {
   const dimensions = DIAGNOSTIC_DIMENSIONS.map(dimension => {
     const values = dimension.questions
@@ -89,9 +136,7 @@ export function calculateDiagnostic(answerMap: Record<string, AnswerValue>): Dia
       dimensionId: dimension.id,
       title: dimension.title,
       score: dimension.score ?? 0,
-      reason: dimension.score !== null && dimension.score < 50
-        ? `A dimensão aparece em uma faixa inicial dentro deste instrumento (${dimension.label.toLowerCase()}).`
-        : `A dimensão tem espaço para ganhar consistência e conexão com as demais áreas (${dimension.label.toLowerCase()}).`,
+        reason: reasonFor(dimension.id, dimension.score ?? 0, dimension.label),
       nextStep: nextStepFor(dimension.id),
       questionIds: source.questions.map(question => question.id),
     };

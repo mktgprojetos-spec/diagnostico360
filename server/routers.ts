@@ -18,8 +18,6 @@ const companyInput = z.object({
   socialUrl: z.string().max(320).optional().or(z.literal("")),
   sector: z.string().min(2).max(160),
   size: z.string().min(1).max(80),
-  stage: z.string().min(1).max(100),
-  challenge: z.string().min(10).max(2000),
 });
 
 const answersInput = z.record(z.string(), z.number().int().min(0).max(4).nullable());
@@ -80,16 +78,16 @@ export const appRouter = router({
       const answers = await getAnswers(assessment.id);
       return { assessment, answers };
     }),
-    save: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput, currentStep: z.number().int().min(0).max(8) })).mutation(async ({ ctx, input }) => {
+    save: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput, currentStep: z.number().int().min(0).max(9), contextMoments: z.array(z.string().min(1).max(120)).max(3), contextChallenge: z.string().min(10).max(2000), contextExpectation: z.string().min(10).max(1000) })).mutation(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
       if (assessment.status !== "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Este diagnóstico já foi finalizado. Para corrigir uma informação, envie uma solicitação administrativa." });
-      const result = await saveAnswers(input.assessmentId, input.answers, input.currentStep, "draft");
+      const result = await saveAnswers(input.assessmentId, input.answers, input.currentStep, "draft", input);
       return { saved: true, result };
     }),
-    submit: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput })).mutation(async ({ ctx, input }) => {
+    submit: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput, contextMoments: z.array(z.string().min(1).max(120)).max(3), contextChallenge: z.string().min(10).max(2000), contextExpectation: z.string().min(10).max(1000) })).mutation(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
       if (assessment.status !== "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Este diagnóstico já foi finalizado." });
-      const result = await saveAnswers(input.assessmentId, input.answers, 8, "submitted");
+      const result = await saveAnswers(input.assessmentId, input.answers, 9, "submitted", input);
       return { submitted: true, result };
     }),
     paymentStatus: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {

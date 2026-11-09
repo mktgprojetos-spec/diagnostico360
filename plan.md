@@ -1,4 +1,4 @@
-# Plano de implementação — Raio-X Estratégico 360
+# Plano de implementação — Diagnóstico 360
 
 ## Objetivo
 
@@ -100,7 +100,7 @@ Exemplos:
 
 ### Wordmark
 
-Usar “Raio-X” em destaque com separação visual do “360”, sugerindo leitura ampla sem recorrer a ícone médico. O símbolo deve ser uma moldura aberta com três eixos, remetendo a visão, prioridade e movimento.
+Usar “Diagnóstico” em destaque com separação visual do “360”, sugerindo leitura ampla sem recorrer a ícone médico. O símbolo deve ser uma moldura aberta com três eixos, remetendo a visão, prioridade e movimento.
 
 ## Fluxo de entrega
 

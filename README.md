@@ -1,4 +1,4 @@
-# Raio-X Estratégico 360
+# Diagnóstico 360
 
 React / Express / tRPC / Drizzle starter, adapted from the Sandbox web-db-user template.
 
