@@ -1,9 +1,9 @@
-# TODO — MVP Diagnóstico 360
+# TODO — MVP Diagnóstico 360º
 
 ## 1. Landing page e oferta
 
 - [x] Exibir posicionamento amplo para empresas de diferentes setores.
-- [x] Explicar problema, solução, entregáveis, funcionamento e limitações.
+- [x] Explicar problema, solução, entregáveis, funcionamento e critérios de análise.
 - [x] Exibir CTA para iniciar o diagnóstico.
 - [x] Direcionar o lead para cadastro autenticado antes de liberar o diagnóstico.
 - [x] Incluir FAQ, política de privacidade e termos resumidos.
@@ -40,7 +40,7 @@
 - [x] Exibir resumo executivo e pontuação geral.
 - [x] Exibir resultado por dimensão.
 - [x] Exibir pontos fortes, lacunas e prioridades.
-- [x] Exibir limitações metodológicas.
+- [x] Exibir critérios metodológicos e premissas da análise.
 - [x] Exibir próximos passos e solução complementar.
 - [x] Permitir imprimir ou salvar o relatório em PDF pelo navegador.
 - [x] Manter histórico das avaliações do cliente.

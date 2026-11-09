@@ -1,8 +1,8 @@
-# Plano de implementação — Diagnóstico 360
+# Plano de implementação — Diagnóstico 360º
 
 ## Objetivo
 
-Construir um MVP funcional para vender e entregar uma avaliação estratégica guiada a empresas de diferentes setores. O MVP deve transformar respostas em uma leitura estruturada de maturidade organizacional, prioridades justificadas e próximos passos, sem se apresentar como benchmark científico, auditoria ou garantia de resultado.
+Construir um MVP funcional para vender e entregar uma avaliação estratégica guiada a empresas de diferentes setores. O MVP deve transformar respostas em uma leitura estruturada de maturidade organizacional, prioridades justificadas e próximos passos, com critérios claros, sem se apresentar como benchmark científico, auditoria ou garantia de resultado.
 
 ## Escopo desta versão
 
