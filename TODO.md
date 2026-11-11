@@ -1,4 +1,4 @@
-# TODO — MVP Diagnóstico 360º
+# TODO — MVP Diagnóstico Estratégico 360º
 
 ## 1. Landing page e oferta
 

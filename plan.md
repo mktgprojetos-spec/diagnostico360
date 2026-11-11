@@ -1,4 +1,4 @@
-# Plano de implementação — Diagnóstico 360º
+# Plano de implementação — Diagnóstico Estratégico 360º
 
 ## Objetivo
 

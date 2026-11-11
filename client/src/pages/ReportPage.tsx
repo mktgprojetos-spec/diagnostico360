@@ -93,7 +93,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   return <div className="min-h-screen bg-[#eeeae5] text-[#2a2622]">
     <div className="print:hidden mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-5 py-5">
       <div className="flex flex-wrap gap-2">
-        <a href={`mailto:taynaracampos@hotmail.com?subject=${encodeURIComponent("Solicitação de correção | Diagnóstico 360º")}&body=${encodeURIComponent(`Olá, Taynara.\n\nGostaria de solicitar uma correção na avaliação #${id}.\n\nMotivo:\n`)}`} className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Solicitar correção</a>
+        <a href={`mailto:taynaracampos@hotmail.com?subject=${encodeURIComponent("Solicitação de correção | Diagnóstico Estratégico 360º")}&body=${encodeURIComponent(`Olá, Taynara.\n\nGostaria de solicitar uma correção na avaliação #${id}.\n\nMotivo:\n`)}`} className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Solicitar correção</a>
         <Button variant="outline" onClick={() => setLocation(`/resultado/${id}`)} className="rounded-full"><ArrowLeft className="mr-2 h-4 w-4" /> Resultado</Button>
         <a href={whatsappUrl} target="_blank" rel="noreferrer" className="rounded-full border border-[#a65e3f] px-4 py-2 text-sm font-semibold text-[#a65e3f]">Agendar planejamento</a>
         <Button onClick={() => window.print()} className="rounded-full bg-[#a65e3f] text-white hover:bg-[#86472f]"><Printer className="mr-2 h-4 w-4" /> Imprimir / salvar PDF</Button>
@@ -103,7 +103,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     <article className="mx-auto max-w-4xl bg-white px-8 py-12 shadow-sm sm:px-14 sm:py-16 print:max-w-none print:shadow-none">
       <header className="border-b-2 border-[#a65e3f] pb-10">
         <div className="flex items-start justify-between gap-6">
-          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Diagnóstico 360º</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">Avaliação #{String(assessment.id).padStart(4, "0")} · versão {assessment.version}</p></div>
+          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Diagnóstico Estratégico 360º</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">Avaliação #{String(assessment.id).padStart(4, "0")} · versão {assessment.version}</p></div>
           <div className="text-right text-sm text-[#776e68]"><p>Data</p><p className="font-semibold text-[#2a2622]">{new Date().toLocaleDateString("pt-BR")}</p></div>
         </div>
       </header>
@@ -171,7 +171,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       <section className="border-b border-[#2a2622]/10 py-10"><div className="flex gap-3"><CircleAlert className="mt-1 h-5 w-5 shrink-0 text-[#a65e3f]" /><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Lacunas e confiança</p><p className="mt-3 leading-7 text-[#776e68]">A confiança considera a quantidade e a consistência das respostas disponíveis. Informações não respondidas permanecem como lacunas e devem ser consideradas antes de decisões relevantes.</p>{result.gaps.length > 0 && <ul className="mt-4 space-y-2 text-sm text-[#776e68]">{result.gaps.map(gap => <li key={gap}>• {gap}</li>)}</ul>}</div></div></section>
 
       <section className="py-10"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Metodologia e critérios da análise</p><p className="mt-4 leading-7 text-[#776e68]">As notas foram calculadas por média das respostas pontuadas em cada dimensão. A pontuação geral utiliza as dimensões com informação suficiente. A classificação é própria deste instrumento, não é benchmark de mercado e não representa auditoria, certificação, parecer profissional ou garantia de desempenho. O relatório tem como objetivo guiar ações e organizar prioridades. Para um parecer profissional e personalizado, é necessário seguir com o Planejamento Estratégico.</p></section>
-      <footer className="border-t border-[#2a2622]/10 pt-6 text-xs text-[#776e68]">Diagnóstico 360º · Diagnóstico estratégico guiado para clareza, prioridade e ação.</footer>
+      <footer className="border-t border-[#2a2622]/10 pt-6 text-xs text-[#776e68]">Diagnóstico Estratégico 360º · Diagnóstico estratégico guiado para clareza, prioridade e ação.</footer>
     </article>
   </div>;
 }
