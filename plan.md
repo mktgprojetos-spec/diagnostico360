@@ -9,7 +9,7 @@ Construir um MVP funcional para vender e entregar uma avaliação estratégica g
 - landing page pública;
 - cadastro e login com Manus OAuth;
 - cadastro básico da empresa;
-- questionário progressivo com oito dimensões e 32 perguntas;
+- questionário progressivo v0.2 com oito dimensões e 24 perguntas, preservando a definição v0.1 de 32 perguntas para resultados históricos;
 - salvamento de progresso;
 - pontuação determinística e reproduzível;
 - cálculo de completude e confiança;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allQuestionIds } from "../shared/diagnostic";
+import { allQuestionIds, getQuestionIds, LEGACY_DIAGNOSTIC_VERSION } from "../shared/diagnostic";
 import { calculateDiagnostic } from "./diagnostic";
 
 describe("calculateDiagnostic", () => {
@@ -16,13 +16,19 @@ describe("calculateDiagnostic", () => {
   });
 
   it("keeps the overall result unavailable when too few dimensions have data", () => {
-    const answers = Object.fromEntries(allQuestionIds.slice(0, 8).map(id => [id, 3]));
-    const result = calculateDiagnostic(answers);
+    const legacyQuestionIds = getQuestionIds(LEGACY_DIAGNOSTIC_VERSION);
+    const answers = Object.fromEntries(legacyQuestionIds.slice(0, 8).map(id => [id, 3]));
+    const result = calculateDiagnostic(answers, LEGACY_DIAGNOSTIC_VERSION);
 
     expect(result.overallScore).toBeNull();
     expect(result.confidence).toBe("low");
     expect(result.completionPercent).toBe(25);
     expect(result.gaps.length).toBeGreaterThan(0);
+  });
+
+  it("uses 24 questions for the current version and keeps 32 in the legacy definition", () => {
+    expect(allQuestionIds).toHaveLength(24);
+    expect(getQuestionIds(LEGACY_DIAGNOSTIC_VERSION)).toHaveLength(32);
   });
 
   it("does not convert non-informed answers into score zero", () => {

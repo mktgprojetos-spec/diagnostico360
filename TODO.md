@@ -18,9 +18,9 @@
 
 ## 3. Questionário progressivo
 
-- [x] Implementar oito dimensões e 32 perguntas.
-- [x] Mostrar progresso e dimensão atual.
-- [x] Permitir respostas de 0 a 4 e “Não informado”.
+- [x] Implementar a versão atual v0.2 com oito dimensões e 24 perguntas, mantendo a definição v0.1 com 32 perguntas para avaliações históricas.
+- [x] Mostrar progresso por contexto e dimensão, com indicação da etapa atual e do total respondido.
+- [x] Permitir respostas de 0 a 4 e “Não informado” em uma escala visual compacta, com explicações acessíveis por apoio contextual.
 - [x] Salvar respostas e progresso.
 - [x] Permitir sair e continuar depois.
 - [x] Evitar coletar dados pessoais sensíveis ou dados de clientes.

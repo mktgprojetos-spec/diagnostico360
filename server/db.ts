@@ -131,14 +131,14 @@ export async function getAnswers(assessmentId: number) {
   return db.select().from(assessmentAnswers).where(eq(assessmentAnswers.assessmentId, assessmentId));
 }
 
-export async function saveAnswers(assessmentId: number, answers: Record<string, number | null>, currentStep: number, status: "draft" | "submitted", context?: { contextMoments: string[]; contextChallenge: string; contextExpectation: string }) {
+export async function saveAnswers(assessmentId: number, answers: Record<string, number | null>, currentStep: number, status: "draft" | "submitted", context?: { contextMoments: string[]; contextChallenge: string; contextExpectation: string }, version?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
   await db.delete(assessmentAnswers).where(eq(assessmentAnswers.assessmentId, assessmentId));
   const rows = Object.entries(answers).map(([questionId, value]) => ({ assessmentId, questionId, value }));
   if (rows.length) await db.insert(assessmentAnswers).values(rows);
   const { calculateDiagnostic } = await import("./diagnostic");
-  const result = calculateDiagnostic(answers);
+  const result = calculateDiagnostic(answers, version);
   await db.update(assessments).set({
     currentStep,
     status,

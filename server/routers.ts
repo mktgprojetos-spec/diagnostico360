@@ -8,6 +8,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { confirmAssessmentCheckout, createAssessmentCheckout } from "./stripe";
+import { calculateDiagnostic } from "./diagnostic";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
 
 const companyInput = z.object({
@@ -81,13 +82,16 @@ export const appRouter = router({
     save: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput, currentStep: z.number().int().min(0).max(9), contextMoments: z.array(z.string().min(1).max(120)).max(3), contextChallenge: z.string().min(10).max(2000), contextExpectation: z.string().min(10).max(1000) })).mutation(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
       if (assessment.status !== "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Este diagnóstico já foi finalizado. Para corrigir uma informação, envie uma solicitação administrativa." });
-      const result = await saveAnswers(input.assessmentId, input.answers, input.currentStep, "draft", input);
+      const result = await saveAnswers(input.assessmentId, input.answers, input.currentStep, "draft", input, assessment.version);
       return { saved: true, result };
     }),
     submit: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), answers: answersInput, contextMoments: z.array(z.string().min(1).max(120)).max(3), contextChallenge: z.string().min(10).max(2000), contextExpectation: z.string().min(10).max(1000) })).mutation(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
       if (assessment.status !== "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Este diagnóstico já foi finalizado." });
-      const result = await saveAnswers(input.assessmentId, input.answers, 9, "submitted", input);
+      const validationResult = calculateDiagnostic(input.answers, assessment.version);
+      const scoredAnswers = Object.values(input.answers).filter(value => typeof value === "number").length;
+      if (scoredAnswers < 18 || validationResult.overallScore === null) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Responda pelo menos 18 perguntas e complete 6 dimensões para enviar o diagnóstico." });
+      const result = await saveAnswers(input.assessmentId, input.answers, 9, "submitted", input, assessment.version);
       return { submitted: true, result };
     }),
     paymentStatus: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
@@ -114,7 +118,7 @@ export const appRouter = router({
       const answers = await getAnswers(assessment.id);
       const { calculateDiagnostic } = await import("./diagnostic");
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));
-      return { assessment, answers, result: calculateDiagnostic(answerMap) };
+      return { assessment, answers, result: calculateDiagnostic(answerMap, assessment.version) };
     }),
   }),
   admin: router({
@@ -130,7 +134,7 @@ export const appRouter = router({
       const company = await getCompanyById(assessment.companyId);
       const { calculateDiagnostic } = await import("./diagnostic");
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));
-      return { assessment, answers, company, result: calculateDiagnostic(answerMap) };
+      return { assessment, answers, company, result: calculateDiagnostic(answerMap, assessment.version) };
     }),
     approve: adminProcedure.input(z.object({ assessmentId: z.number().int().positive(), status: z.enum(["needs_review", "approved"]), note: z.string().max(2000).nullable() })).mutation(({ ctx, input }) => addReview(input.assessmentId, ctx.user.id, input.status, input.note)),
   }),

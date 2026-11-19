@@ -1,4 +1,4 @@
-import { DIAGNOSTIC_DIMENSIONS, type AnswerValue } from "@shared/diagnostic";
+import { DIAGNOSTIC_VERSION, getDiagnosticDimensions, type AnswerValue } from "@shared/diagnostic";
 
 export type DiagnosticResult = {
   overallScore: number | null;
@@ -96,8 +96,9 @@ function reasonFor(dimensionId: string, score: number, label: string) {
   return reasons[dimensionId]?.[band] ?? `As respostas colocam esta dimensão na faixa ${label.toLowerCase()} e indicam um ponto de atenção para a próxima decisão.`;
 }
 
-export function calculateDiagnostic(answerMap: Record<string, AnswerValue>): DiagnosticResult {
-  const dimensions = DIAGNOSTIC_DIMENSIONS.map(dimension => {
+export function calculateDiagnostic(answerMap: Record<string, AnswerValue>, version = DIAGNOSTIC_VERSION): DiagnosticResult {
+  const definition = getDiagnosticDimensions(version);
+  const dimensions = definition.map(dimension => {
     const values = dimension.questions
       .map(question => answerMap[question.id])
       .filter((value): value is number => typeof value === "number" && value >= 0 && value <= 4);
@@ -113,7 +114,7 @@ export function calculateDiagnostic(answerMap: Record<string, AnswerValue>): Dia
     };
   });
 
-  const totalQuestions = DIAGNOSTIC_DIMENSIONS.reduce((sum, dimension) => sum + dimension.questions.length, 0);
+  const totalQuestions = definition.reduce((sum, dimension) => sum + dimension.questions.length, 0);
   const answeredQuestions = dimensions.reduce((sum, dimension) => sum + dimension.answered, 0);
   const completionPercent = Math.round((answeredQuestions / totalQuestions) * 100);
   const eligible = dimensions.filter(dimension => dimension.answered >= 3 && dimension.score !== null);
@@ -131,7 +132,7 @@ export function calculateDiagnostic(answerMap: Record<string, AnswerValue>): Dia
     .sort((a, b) => (a.score ?? 100) - (b.score ?? 100));
 
   const priorities = ranked.slice(0, 5).map(dimension => {
-    const source = DIAGNOSTIC_DIMENSIONS.find(item => item.id === dimension.id)!;
+    const source = definition.find(item => item.id === dimension.id)!;
     return {
       dimensionId: dimension.id,
       title: dimension.title,
