@@ -5,7 +5,7 @@ import { DIAGNOSTIC_VERSION } from "@shared/diagnostic";
 import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { assessments } from "../drizzle/schema";
+import { assessments, companies } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { confirmAssessmentCheckout, createAssessmentCheckout } from "./stripe";
 import { calculateDiagnostic } from "./diagnostic";
@@ -125,7 +125,8 @@ export const appRouter = router({
     list: adminProcedure.query(async () => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível." });
-      return db.select().from(assessments).orderBy(desc(assessments.updatedAt));
+      const rows = await db.select({ assessment: assessments, companyName: companies.name }).from(assessments).leftJoin(companies, eq(assessments.companyId, companies.id)).orderBy(desc(assessments.updatedAt));
+      return rows.map(row => ({ ...row.assessment, companyName: row.companyName }));
     }),
     detail: adminProcedure.input(z.object({ assessmentId: z.number().int().positive() })).query(async ({ input }) => {
       const assessment = await getAssessmentById(input.assessmentId);

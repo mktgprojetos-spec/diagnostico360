@@ -35,41 +35,60 @@ function getExecutiveSummary(score: number | null, confidence: string, prioritie
   return `${lead} ${focus} Esta análise tem nível de segurança ${confidence.toLowerCase()} e deve orientar uma conversa de decisão, não substituir uma análise aprofundada da operação.`;
 }
 
+const CENTRAL_PATTERNS: Record<string, string> = {
+  strategy: "A empresa pode estar executando muitas iniciativas sem uma ordem clara de objetivos para orientar escolhas e renúncias.",
+  positioning: "A empresa pode estar tentando falar com todos ao mesmo tempo, o que dilui a proposta de valor e dificulta ser escolhida pelo público certo.",
+  market: "As decisões parecem partir mais da percepção interna do que de uma leitura organizada de clientes, necessidades e oportunidades.",
+  marketing: "A comunicação pode estar consumindo energia sem uma ligação clara entre público, mensagem, canal e resultado esperado.",
+  sales: "O crescimento pode estar dependendo de esforço individual na venda, sem um processo comercial que gere previsibilidade.",
+  operations: "A empresa parece ter prioridades relevantes, mas encontra dificuldade para transformá-las em iniciativas com responsáveis, prazos e capacidade de execução.",
+  metrics: "A empresa pode estar tomando decisões com esforço e experiência, mas ainda sem um sistema simples de indicadores para acompanhar se está avançando.",
+  evolution: "As decisões podem estar sendo tomadas sem um ritmo de acompanhamento, o que dificulta registrar aprendizados, corrigir rotas e manter a estratégia viva.",
+};
+
+const EXPECTED_RESULTS: Record<string, string> = {
+  strategy: "Até três objetivos priorizados que sirvam de critério para dizer sim e não.",
+  positioning: "Uma frase de valor clara, validada com a liderança e usada na comunicação.",
+  market: "Um registro organizado de necessidades, objeções e critérios de compra dos clientes.",
+  marketing: "Cada canal ativo ligado a um objetivo e a um sinal concreto de avanço.",
+  sales: "Etapas comerciais visíveis, com próximo passo definido para cada oportunidade.",
+  operations: "Um gargalo crítico com responsável, prazo e recursos definidos.",
+  metrics: "Poucos indicadores ligados aos objetivos, com frequência de acompanhamento definida.",
+  evolution: "Um ritual de acompanhamento com pauta, decisões registradas e aprendizados.",
+};
+
 function getCentralPattern(dimensions: Dimension[], priorities: Priority[]) {
+  const scored = dimensions.filter(item => item.score !== null).map(item => item.score as number);
+  if (scored.length > 0 && Math.max(...scored) - Math.min(...scored) < 10) {
+    return "As dimensões estão em níveis muito próximos. O desafio parece ser transversal: conectar direção, execução e acompanhamento ao mesmo tempo, em vez de corrigir uma área isolada.";
+  }
   const lowest = priorities[0]?.dimensionId;
-  const hasStrategy = dimensions.find(item => item.id === "strategy")?.score ?? null;
-  const hasExecution = dimensions.find(item => item.id === "operations")?.score ?? null;
-  const hasMetrics = dimensions.find(item => item.id === "metrics")?.score ?? null;
-  if (lowest === "strategy" || (hasStrategy !== null && hasStrategy < 50)) return "A empresa pode estar executando muitas iniciativas sem uma ordem clara de objetivos para orientar escolhas e renúncias.";
-  if (lowest === "metrics" || (hasMetrics !== null && hasMetrics < 50)) return "A empresa pode estar tomando decisões com esforço e experiência, mas ainda sem um sistema simples de indicadores para acompanhar se está avançando.";
-  if (lowest === "operations" || (hasExecution !== null && hasExecution < 50)) return "A empresa parece ter prioridades relevantes, mas encontra dificuldade para transformá-las em iniciativas com responsáveis, prazos e capacidade de execução.";
-  return "O principal desafio parece estar em conectar as prioridades do negócio às decisões, aos processos e ao acompanhamento do dia a dia.";
+  return (lowest && CENTRAL_PATTERNS[lowest]) ?? "O principal desafio parece estar em conectar as prioridades do negócio às decisões, aos processos e ao acompanhamento do dia a dia.";
 }
 
-function getPriorityMeta(priority: Priority, index: number) {
-  const highImpact = priority.score < 50 || index < 2;
-  return { impact: highImpact ? "Alto" : "Relevante", urgency: index < 2 ? "Alta" : "Média" };
+function getPriorityMeta(priority: Priority, lowestScore: number) {
+  const impact = priority.score < 25 ? "Muito alto" : priority.score < 50 ? "Alto" : priority.score < 75 ? "Médio" : "Baixo";
+  const urgency = priority.score <= lowestScore + 5 ? "Alta" : priority.score < 50 ? "Média" : "Baixa";
+  return { impact, urgency };
 }
 
 function getThirtyDayMoves(priorities: Priority[]) {
-  const first = priorities[0];
-  const second = priorities[1];
-  const third = priorities[2];
+  const [first, second, third] = priorities;
   return [
     {
       title: first ? `Dar foco a ${first.title.toLowerCase()}` : "Escolher a prioridade central",
       text: first ? first.nextStep : "Escolha uma prioridade que possa orientar as decisões dos próximos 30 dias.",
-      result: "Uma decisão central para reduzir dispersão e orientar a liderança.",
+      result: (first && EXPECTED_RESULTS[first.dimensionId]) ?? "Uma decisão central para reduzir dispersão e orientar a liderança.",
     },
     {
-      title: second ? `Conectar a prioridade a ${second.title.toLowerCase()}` : "Definir o que precisa sustentar a prioridade",
+      title: second ? `Avançar em ${second.title.toLowerCase()}` : "Definir o que precisa sustentar a prioridade",
       text: second ? second.nextStep : "Identifique quais processos, clientes ou indicadores precisam sustentar a prioridade escolhida.",
-      result: "Menos distância entre o que foi decidido e o que precisa acontecer.",
+      result: (second && EXPECTED_RESULTS[second.dimensionId]) ?? "Menos distância entre o que foi decidido e o que precisa acontecer.",
     },
     {
-      title: third ? `Criar um sinal de acompanhamento em ${third.title.toLowerCase()}` : "Estabelecer um ritual de acompanhamento",
+      title: third ? `Preparar o terreno em ${third.title.toLowerCase()}` : "Estabelecer um ritual de acompanhamento",
       text: third ? third.nextStep : "Defina um indicador ou ritual simples para acompanhar a evolução e registrar decisões.",
-      result: "Mais clareza para perceber avanço, desvio e necessidade de correção.",
+      result: (third && EXPECTED_RESULTS[third.dimensionId]) ?? "Mais clareza para perceber avanço, desvio e necessidade de correção.",
     },
   ];
 }
@@ -104,7 +123,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
       <header className="border-b-2 border-[#a65e3f] pb-10">
         <div className="flex items-start justify-between gap-6">
           <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Diagnóstico Estratégico 360º</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">Avaliação #{String(assessment.id).padStart(4, "0")} · versão {assessment.version}</p></div>
-          <div className="text-right text-sm text-[#776e68]"><p>Data</p><p className="font-semibold text-[#2a2622]">{new Date().toLocaleDateString("pt-BR")}</p></div>
+          <div className="text-right text-sm text-[#776e68]"><p>Concluído em</p><p className="font-semibold text-[#2a2622]">{new Date(assessment.submittedAt ?? assessment.updatedAt).toLocaleDateString("pt-BR")}</p></div>
         </div>
       </header>
 
@@ -141,7 +160,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Matriz de prioridades</p>
         <h2 className="mt-3 font-serif text-3xl">Onde concentrar atenção</h2>
         <p className="mt-3 leading-7 text-[#776e68]">As prioridades abaixo são hipóteses de trabalho baseadas nas respostas. Impacto e urgência ajudam a organizar a conversa, mas não substituem a validação com a liderança.</p>
-        <div className="mt-6 overflow-hidden rounded-2xl border border-[#2a2622]/10"><div className="grid grid-cols-[1.4fr_.55fr_.55fr] gap-3 bg-[#f1e8e1] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#6b625c]"><span>Prioridade</span><span>Impacto</span><span>Urgência</span></div>{priorities.map((priority, index) => { const meta = getPriorityMeta(priority, index); return <div key={priority.dimensionId} className="grid grid-cols-[1.4fr_.55fr_.55fr] gap-3 border-t border-[#2a2622]/10 px-4 py-4 text-sm"><span className="font-semibold">{priority.title}</span><span className="text-[#a65e3f]">{meta.impact}</span><span className="text-[#a65e3f]">{meta.urgency}</span></div>; })}</div>
+        <div className="mt-6 overflow-hidden rounded-2xl border border-[#2a2622]/10"><div className="grid grid-cols-[1.4fr_.55fr_.55fr] gap-3 bg-[#f1e8e1] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#6b625c]"><span>Prioridade</span><span>Impacto</span><span>Urgência</span></div>{priorities.map(priority => { const meta = getPriorityMeta(priority, priorities[0]?.score ?? priority.score); return <div key={priority.dimensionId} className="grid grid-cols-[1.4fr_.55fr_.55fr] gap-3 border-t border-[#2a2622]/10 px-4 py-4 text-sm"><span className="font-semibold">{priority.title}</span><span className="text-[#a65e3f]">{meta.impact}</span><span className="text-[#a65e3f]">{meta.urgency}</span></div>; })}</div>
         <div className="mt-7 space-y-6">{priorities.map((priority, index) => <div key={priority.dimensionId} className="flex gap-4"><span className="font-mono text-sm text-[#a65e3f]">0{index + 1}</span><div><h3 className="font-serif text-2xl">{priority.title}</h3><p className="mt-2 leading-7 text-[#776e68]">{priority.reason}</p><p className="mt-2 text-sm font-semibold text-[#a65e3f]">Próxima ação: {priority.nextStep}</p></div></div>)}</div>
       </section>
 

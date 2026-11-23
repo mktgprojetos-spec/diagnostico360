@@ -38,4 +38,16 @@ describe("calculateDiagnostic", () => {
     expect(result.overallScore).toBeNull();
     expect(result.dimensions.every(dimension => dimension.score === null)).toBe(true);
   });
+
+  it("does not label low or prioritized dimensions as strengths", () => {
+    const low = Object.fromEntries(getQuestionIds(LEGACY_DIAGNOSTIC_VERSION).map(id => [id, 1]));
+    expect(calculateDiagnostic(low, LEGACY_DIAGNOSTIC_VERSION).strengths).toEqual([]);
+
+    const high = Object.fromEntries(allQuestionIds.map(id => [id, 3]));
+    const result = calculateDiagnostic(high);
+    const priorityIds = new Set(result.priorities.map(priority => priority.dimensionId));
+    expect(result.strengths.length).toBeGreaterThan(0);
+    expect(result.strengths.every(strength => strength.score >= 50)).toBe(true);
+    expect(result.dimensions.filter(d => result.strengths.some(s => s.title === d.title)).every(d => !priorityIds.has(d.id))).toBe(true);
+  });
 });

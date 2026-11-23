@@ -26,6 +26,8 @@ export type DiagnosticResult = {
   gaps: string[];
 };
 
+export const STRENGTH_MIN_SCORE = 50;
+
 function labelForScore(score: number | null) {
   if (score === null) return "Sem dados suficientes";
   if (score < 25) return "Não estruturado";
@@ -143,8 +145,11 @@ export function calculateDiagnostic(answerMap: Record<string, AnswerValue>, vers
     };
   });
 
+  // Só é ponto forte o que atinge a faixa "Parcialmente estruturado" (>= 50)
+  // e não aparece ao mesmo tempo como prioridade.
+  const priorityIds = new Set(priorities.map(priority => priority.dimensionId));
   const strengths = [...dimensions]
-    .filter(dimension => dimension.score !== null)
+    .filter(dimension => dimension.score !== null && dimension.score >= STRENGTH_MIN_SCORE && !priorityIds.has(dimension.id))
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     .slice(0, 3)
     .map(dimension => ({ title: dimension.title, score: dimension.score ?? 0 }));
