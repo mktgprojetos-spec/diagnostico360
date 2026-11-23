@@ -2,13 +2,14 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { DIAGNOSTIC_VERSION } from "@shared/diagnostic";
-import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
+import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getUserById, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments, companies } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { confirmAssessmentCheckout, createAssessmentCheckout } from "./stripe";
 import { calculateDiagnostic } from "./diagnostic";
+import { appUrl, sendReportReleasedEmail } from "./email";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
 
 const companyInput = z.object({
@@ -126,8 +127,8 @@ export const appRouter = router({
     list: adminProcedure.query(async () => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível." });
-      const rows = await db.select({ assessment: assessments, companyName: companies.name }).from(assessments).leftJoin(companies, eq(assessments.companyId, companies.id)).orderBy(desc(assessments.updatedAt));
-      return rows.map(row => ({ ...row.assessment, companyName: row.companyName }));
+      const rows = await db.select({ assessment: assessments, companyName: companies.name, responsibleName: companies.responsibleName, phone: companies.phone }).from(assessments).leftJoin(companies, eq(assessments.companyId, companies.id)).orderBy(desc(assessments.updatedAt));
+      return rows.map(row => ({ ...row.assessment, companyName: row.companyName, responsibleName: row.responsibleName, phone: row.phone }));
     }),
     detail: adminProcedure.input(z.object({ assessmentId: z.number().int().positive() })).query(async ({ input }) => {
       const assessment = await getAssessmentById(input.assessmentId);
@@ -138,7 +139,17 @@ export const appRouter = router({
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));
       return { assessment, answers, company, result: calculateDiagnostic(answerMap, assessment.version) };
     }),
-    approve: adminProcedure.input(z.object({ assessmentId: z.number().int().positive(), status: z.enum(["needs_review", "approved"]), note: z.string().max(2000).nullable() })).mutation(({ ctx, input }) => addReview(input.assessmentId, ctx.user.id, input.status, input.note)),
+    approve: adminProcedure.input(z.object({ assessmentId: z.number().int().positive(), status: z.enum(["needs_review", "approved"]), note: z.string().max(2000).nullable() })).mutation(async ({ ctx, input }) => {
+      const before = await getAssessmentById(input.assessmentId);
+      if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Avaliação não encontrada." });
+      await addReview(input.assessmentId, ctx.user.id, input.status, input.note);
+      if (input.status !== "approved" || before.status === "approved") return { approved: input.status === "approved", emailSent: false, emailTo: null };
+      const company = await getCompanyById(before.companyId);
+      const owner = await getUserById(before.userId);
+      const emailTo = company?.email || owner?.email || null;
+      const emailSent = emailTo ? await sendReportReleasedEmail({ to: emailTo, responsibleName: company?.responsibleName ?? owner?.name, assessmentId: before.id, baseUrl: appUrl(ctx.req.get("origin")) }) : false;
+      return { approved: true, emailSent, emailTo };
+    }),
   }),
 });
 

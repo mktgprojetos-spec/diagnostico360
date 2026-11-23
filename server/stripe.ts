@@ -1,20 +1,12 @@
 import Stripe from "stripe";
 import type { Request, Response } from "express";
 import { markAssessmentPaid as markAssessmentPaidInDb, recordStripeEvent } from "./db";
-import { notifyOwner } from "./_core/notification";
-import { REVIEW_SLA_HOURS } from "@shared/product";
+import { appUrl, sendPaymentReceivedOwnerEmail } from "./email";
 
 async function markAssessmentPaid(assessmentId: number, paymentIntentId: string | null) {
   const firstConfirmation = await markAssessmentPaidInDb(assessmentId, paymentIntentId);
   if (!firstConfirmation) return;
-  try {
-    await notifyOwner({
-      title: `Diagnóstico #${String(assessmentId).padStart(4, "0")} pago: aprovar em até ${REVIEW_SLA_HOURS}h`,
-      content: `O pagamento do Diagnóstico #${String(assessmentId).padStart(4, "0")} foi confirmado. O cliente está aguardando a liberação do relatório final, prometida em até ${REVIEW_SLA_HOURS}h. Revise e aprove no painel /admin.`,
-    });
-  } catch (error) {
-    console.error("[Notification] Falha ao avisar sobre pagamento", error);
-  }
+  await sendPaymentReceivedOwnerEmail({ assessmentId, baseUrl: appUrl() });
 }
 
 const PRICE_IN_CENTS = 49700;
