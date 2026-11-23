@@ -39,7 +39,7 @@ export async function createAssessmentCheckout(req: Request, user: { id: number;
       price_data: {
         currency: "brl",
         unit_amount: PRICE_IN_CENTS,
-        product_data: { name: "Diagnóstico Estratégico 360º", description: "Diagnóstico estratégico guiado com relatório personalizado" },
+        product_data: { name: "Diagnóstico Estratégico 360º", description: "Diagnóstico estratégico com relatório personalizado" },
       },
       quantity: 1,
     }],

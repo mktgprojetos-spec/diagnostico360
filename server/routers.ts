@@ -71,7 +71,7 @@ export const appRouter = router({
       const latestSubmitted = await getLatestSubmittedAssessment(ctx.user.id);
       if (latestSubmitted?.submittedAt) {
         const availableAt = latestSubmitted.submittedAt.getTime() + 90 * 24 * 60 * 60 * 1000;
-        if (Date.now() < availableAt) throw new TRPCError({ code: "PRECONDITION_FAILED", message: `Uma nova avaliação estará disponível a partir de ${new Date(availableAt).toLocaleDateString("pt-BR")}. Para revisar cenários antes disso, agende o Planejamento Estratégico.` });
+        if (Date.now() < availableAt) throw new TRPCError({ code: "PRECONDITION_FAILED", message: `Uma nova avaliação estará disponível a partir de ${new Date(availableAt).toLocaleDateString("pt-BR")}. Para revisar cenários antes disso, agende o Planejamento Estratégico Inteligente.` });
       }
       return createAssessment(ctx.user.id, company.id, DIAGNOSTIC_VERSION);
     }),

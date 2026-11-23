@@ -14,8 +14,8 @@ export function ReviewPending({ assessmentId, paidAt }: { assessmentId: number; 
   const deadline = formatDeadline(paidAt);
   const reasons = [
     { icon: <FileCheck2 className="h-5 w-5" />, title: "Coerência da análise", text: "Conferimos se pontuações, contexto informado e prioridades contam a mesma história antes de virarem recomendação." },
-    { icon: <UserCheck className="h-5 w-5" />, title: "Olhar especializado", text: "Seu relatório não é só um cálculo automático: ele é validado por uma especialista antes de orientar decisões da sua empresa." },
-    { icon: <ShieldCheck className="h-5 w-5" />, title: "Segurança para os dois lados", text: "Você recebe uma análise em que pode confiar, e nós garantimos que cada entrega tenha o padrão de qualidade que assinamos embaixo." },
+    { icon: <UserCheck className="h-5 w-5" />, title: "Revisão humana", text: "Uma pessoa confere o relatório antes da liberação, para que nenhuma recomendação incoerente chegue até você." },
+    { icon: <ShieldCheck className="h-5 w-5" />, title: "Segurança para os dois lados", text: "Você recebe uma análise consistente para orientar decisões, e nós asseguramos o mesmo padrão de qualidade em cada entrega." },
   ];
 
   return <div className="min-h-screen bg-[#faf8f5] px-5 py-10 text-[#2a2622] sm:py-16">

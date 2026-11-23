@@ -32,6 +32,6 @@ function whatsappReleaseUrl(item: { id: number; phone: string | null; responsibl
   const digits = (item.phone ?? "").replace(/\D/g, "");
   const number = digits.length === 10 || digits.length === 11 ? `55${digits}` : digits;
   const firstName = item.responsibleName?.trim().split(" ")[0];
-  const message = `Olá${firstName ? `, ${firstName}` : ""}! Aqui é a Taynara. A revisão do seu Diagnóstico Estratégico 360º foi concluída e o relatório final já está liberado: ${window.location.origin}/relatorio/${item.id}\n\nSugiro reservar um momento com a liderança para ler com calma e discutir as perguntas estratégicas do final. Se quiser, posso te ajudar a transformar essas prioridades em plano no Planejamento Estratégico Guiado.`;
+  const message = `Olá${firstName ? `, ${firstName}` : ""}! Aqui é a Taynara. A revisão do seu Diagnóstico Estratégico 360º foi concluída e o relatório final já está liberado: ${window.location.origin}/relatorio/${item.id}\n\nSugiro reservar um momento com a liderança para ler com calma e discutir as perguntas estratégicas do final. Se quiser, posso te ajudar a transformar essas prioridades em plano no Planejamento Estratégico Inteligente.`;
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
