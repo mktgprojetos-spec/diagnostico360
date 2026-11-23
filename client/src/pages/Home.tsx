@@ -1,15 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, BarChart3, Check, Compass, LogIn, Menu, ShieldCheck, Sparkles, Target, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { startLogin } from "@/const";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { PRODUCT_OFFER } from "@shared/product";
 
 const dimensions = ["Clareza estratégica", "Posicionamento e valor", "Clientes e mercado", "Marketing e comunicação", "Vendas", "Processos e execução", "Indicadores", "Gestão e evolução"];
-const exampleMatrix = [["Vendas e processo comercial", "Muito alto", "Alta"], ["Indicadores e decisões", "Alto", "Alta"], ["Posicionamento e valor", "Alto", "Média"]];
-const exampleMoves = [["Desenhar as etapas comerciais e o próximo passo de cada oportunidade", "etapas visíveis e previsibilidade na venda."], ["Escolher poucos indicadores ligados aos objetivos", "acompanhamento com frequência definida."], ["Escrever em uma frase o problema que a empresa resolve", "uma proposta de valor clara para usar na comunicação."]];
 const deliveryDetails = [
   "Separe direção de distração e defina quais escolhas devem orientar o próximo passo.",
   "Defina o que diferencia sua empresa e para quem sua proposta de valor faz sentido.",
@@ -83,16 +81,8 @@ export default function Home() {
         <section id="entrega" className="bg-[#f1e8e1] px-5 py-24 lg:px-10"><div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[.8fr_1.2fr] lg:items-start"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">O que você recebe</p><h2 className="mt-4 font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Uma visão ampla para decidir melhor.</h2><p className="mt-5 text-lg leading-8 text-[#6b625c]">Você recebe uma visão organizada das oito dimensões que sustentam a gestão: estratégia, posicionamento, mercado, comunicação, vendas, execução, indicadores e evolução. O resultado mostra onde concentrar atenção e qual é o próximo passo mais coerente para o momento da empresa.</p><Button onClick={start} className="mt-8 rounded-full bg-[#a65e3f] text-white hover:bg-[#86472f]">Receber minha análise <ArrowRight className="ml-2 h-4 w-4" /></Button></div><div className="grid gap-x-10 gap-y-7 sm:grid-cols-2">{dimensions.map((item, index) => <div key={item} className="flex gap-3 border-b border-[#a65e3f]/15 pb-5"><span className="font-mono text-xs text-[#a65e3f]">0{index + 1}</span><div><h3 className="font-semibold">{item}</h3><p className="mt-1 text-sm leading-6 text-[#776e68]">{deliveryDetails[index]}</p></div></div>)}</div></div></section>
 
         <section id="exemplo" className="px-5 pt-24 pb-4 lg:px-10"><div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[.9fr_1.1fr] lg:items-end">
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Por dentro do relatório</p><h2 className="mt-4 font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Não é uma nota. É uma direção para decidir.</h2></div>
-            <p className="text-lg leading-8 text-[#6b625c]">Investir em tráfego, contratar, mudar a comunicação ou reorganizar a operação sem saber onde está o gargalo custa caro: tempo, dinheiro e energia da liderança. O relatório mostra onde agir primeiro, por quê, e o que fazer nos próximos 30 dias.</p>
-          </div>
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            <div className="rounded-[1.5rem] border border-[#2a2622]/10 bg-white p-6"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a65e3f]">Matriz de prioridades</p><div className="mt-5 overflow-hidden rounded-xl border border-[#2a2622]/10 text-sm"><div className="grid grid-cols-[1.4fr_.8fr_.7fr] gap-2 bg-[#f1e8e1] px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-[#6b625c]"><span>Prioridade</span><span>Impacto</span><span>Urgência</span></div>{exampleMatrix.map(([title, impact, urgency]) => <div key={title} className="grid grid-cols-[1.4fr_.8fr_.7fr] gap-2 border-t border-[#2a2622]/10 px-3 py-2.5"><span className="font-medium">{title}</span><span className="text-[#a65e3f]">{impact}</span><span className="text-[#a65e3f]">{urgency}</span></div>)}</div><p className="mt-4 text-sm leading-6 text-[#776e68]">Cada prioridade vem com a justificativa ligada às suas respostas e uma próxima ação concreta.</p></div>
-            <div className="rounded-[1.5rem] border border-[#2a2622]/10 bg-white p-6"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a65e3f]">Três movimentos para 30 dias</p><div className="mt-5 space-y-4">{exampleMoves.map(([title, result], index) => <div key={title} className="flex gap-3"><span className="font-mono text-xs text-[#a65e3f]">0{index + 1}</span><div><p className="text-sm font-semibold">{title}</p><p className="mt-1 text-xs leading-5 text-[#776e68]">Resultado esperado: {result}</p></div></div>)}</div></div>
-            <div className="rounded-[1.5rem] bg-[#2a2622] p-6 text-[#faf8f5]"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#eadfd6]">Perguntas para a liderança</p><ul className="mt-5 space-y-3 text-sm leading-6 text-[#dfd5ce]"><li>Qual decisão, se tomada agora, reduziria mais dispersão de energia na empresa?</li><li>O que precisa deixar de ser feito para que a prioridade escolhida realmente avance?</li><li>Como a liderança saberá, em 30 ou 90 dias, que está no caminho certo?</li></ul></div>
-          </div>
-          <div className="mt-6 flex flex-col justify-between gap-3 rounded-2xl bg-[#f1e8e1] p-5 sm:flex-row sm:items-center"><p className="flex items-center gap-3 text-sm font-semibold text-[#2a2622]"><ShieldCheck className="h-5 w-5 shrink-0 text-[#a65e3f]" />Todo relatório é revisado por uma especialista antes de ser liberado, em até 24h após o pagamento.</p><span className="text-xs text-[#776e68]">Exemplo ilustrativo. O seu relatório é calculado com as respostas da sua empresa.</span></div>
+          <div className="max-w-3xl"><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Por dentro do relatório</p><h2 className="mt-4 font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Veja como o relatório orienta suas próximas decisões</h2><p className="mt-5 text-lg leading-8 text-[#6b625c]">Antes de investir em tráfego, contratar ou mudar a comunicação, vale saber onde está o gargalo da empresa. O relatório mostra isso em três partes.</p></div>
+          <ReportExample />
         </div></section>
 
 
@@ -111,4 +101,67 @@ export default function Home() {
 
 function Step({ number, icon, title, text }: { number: string; icon: React.ReactNode; title: string; text: string }) {
   return <div className="rounded-[1.5rem] border border-[#2a2622]/10 bg-white p-7"><div className="flex items-center justify-between"><span className="font-mono text-xs text-[#a65e3f]">{number}</span><span className="text-[#a65e3f]">{icon}</span></div><h3 className="mt-12 font-serif text-2xl">{title}</h3><p className="mt-3 leading-7 text-[#776e68]">{text}</p></div>;
+}
+
+const reportExampleSteps = [
+  {
+    label: "Onde agir primeiro",
+    summary: "As oito dimensões são comparadas entre si e o relatório indica por onde começar, com o motivo de cada escolha.",
+  },
+  {
+    label: "O que fazer em 30 dias",
+    summary: "As prioridades viram três movimentos práticos, cada um com o resultado que você deve enxergar ao final do mês.",
+  },
+  {
+    label: "O que levar para a liderança",
+    summary: "Perguntas para conduzir a conversa com sócios e gestores e transformar a análise em decisão.",
+  },
+];
+
+function ReportExample() {
+  const [active, setActive] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
+  useEffect(() => {
+    if (!autoplay || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setTimeout(() => setActive(current => (current + 1) % reportExampleSteps.length), 7000);
+    return () => window.clearTimeout(timer);
+  }, [active, autoplay]);
+  const select = (index: number) => { setAutoplay(false); setActive(index); };
+
+  return <div className="mt-12 grid gap-6 lg:grid-cols-[.8fr_1.2fr] lg:items-stretch">
+    <div className="flex flex-col gap-3" role="tablist" aria-label="Partes do relatório">
+      {reportExampleSteps.map((step, index) => {
+        const selected = index === active;
+        return <button key={step.label} role="tab" aria-selected={selected} onClick={() => select(index)} className={`relative overflow-hidden rounded-2xl border p-5 text-left transition ${selected ? "border-[#a65e3f]/40 bg-white shadow-[0_12px_30px_rgba(42,38,34,.08)]" : "border-[#2a2622]/10 bg-transparent hover:bg-white/60"}`}>
+          <span className="flex items-center gap-3"><span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${selected ? "bg-[#a65e3f] text-white" : "bg-[#eadfd6] text-[#a65e3f]"}`}>{index + 1}</span><span className="font-semibold">{step.label}</span></span>
+          {selected && <p className="mt-3 pl-10 text-sm leading-6 text-[#6b625c]">{step.summary}</p>}
+          {selected && autoplay && <span key={`bar-${active}`} className="absolute bottom-0 left-0 h-0.5 bg-[#a65e3f] motion-safe:animate-[report-progress_7s_linear_forwards]" />}
+        </button>;
+      })}
+      <p className="mt-2 flex items-start gap-2 px-1 text-sm leading-6 text-[#6b625c]"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#a65e3f]" />Antes da liberação, uma especialista revisa cada relatório. Você recebe o seu em até 24h após o pagamento.</p>
+    </div>
+
+    <div className="relative min-h-[340px] rounded-[2rem] border border-[#2a2622]/10 bg-white p-6 sm:p-8">
+      <div className="mb-4 flex justify-end sm:absolute sm:right-6 sm:top-6 sm:mb-0"><span className="rounded-full bg-[#f1e8e1] px-3 py-1 text-[11px] font-semibold text-[#a65e3f]">Exemplo ilustrativo</span></div>
+      <div key={active} className="motion-safe:animate-[report-fade_.45s_ease-out]">
+        {active === 0 && <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a65e3f]">Matriz de prioridades</p>
+          <div className="mt-6 divide-y divide-[#2a2622]/10 rounded-2xl border border-[#2a2622]/10">{[["Vendas e processo comercial", 22, "Muito alto"], ["Indicadores e decisões", 31, "Alto"], ["Posicionamento e valor", 44, "Alto"]].map(([title, score, impact], index) => <div key={title as string} className="flex items-center gap-4 px-4 py-3.5">
+            <span className="font-mono text-xs text-[#a65e3f]">0{index + 1}</span>
+            <div className="min-w-0 flex-1"><p className="font-medium leading-5">{title}</p><p className="mt-0.5 text-xs text-[#776e68]">Nota {score}/100</p></div>
+            <span className="shrink-0 rounded-full bg-[#f1e8e1] px-3 py-1 text-xs font-semibold text-[#a65e3f]">Impacto {String(impact).toLowerCase()}</span>
+          </div>)}</div>
+          <div className="mt-7 rounded-2xl bg-[#faf8f5] p-4 text-sm leading-6 text-[#514943]"><span className="font-semibold">Por que vendas vem primeiro:</span> o processo comercial depende de esforço individual, sem etapas e próximos passos visíveis, o que tira previsibilidade do crescimento.</div>
+        </div>}
+        {active === 1 && <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a65e3f]">Três movimentos para os próximos 30 dias</p>
+          <ol className="mt-6 space-y-5">{[["Desenhar as etapas da venda e o próximo passo de cada oportunidade", "Você passa a ver onde as vendas travam."], ["Escolher até cinco indicadores ligados aos objetivos do ano", "As reuniões passam a decidir com base em números."], ["Escrever em uma frase o problema que a empresa resolve e para quem", "A comunicação ganha uma mensagem central."]].map(([move, result], index) => <li key={move} className="flex gap-4"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f1e8e1] text-xs font-bold text-[#a65e3f]">{index + 1}</span><div><p className="font-medium leading-6">{move}</p><p className="mt-1 text-sm text-[#776e68]">{result}</p></div></li>)}</ol>
+        </div>}
+        {active === 2 && <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a65e3f]">Perguntas para a reunião de liderança</p>
+          <ul className="mt-6 space-y-4">{["Qual decisão, se tomada agora, reduziria mais a dispersão de energia na empresa?", "O que precisa deixar de ser feito para que a prioridade escolhida avance?", "Como vamos saber, em 30 ou 90 dias, que estamos no caminho certo?"].map(question => <li key={question} className="rounded-2xl border-l-2 border-[#a65e3f] bg-[#faf8f5] px-4 py-3 font-serif text-lg leading-7">{question}</li>)}</ul>
+        </div>}
+      </div>
+    </div>
+  </div>;
 }

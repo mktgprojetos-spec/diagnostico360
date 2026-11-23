@@ -185,3 +185,6 @@
     }
   }
 }
+
+@keyframes report-progress { from { width: 0%; } to { width: 100%; } }
+@keyframes report-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
