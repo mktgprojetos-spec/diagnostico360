@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, CircleAlert, Printer, Target } from "lucide-react";
-import { useLocation } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { ReviewPending } from "@/components/ReviewPending";
 
 type Dimension = {
   id: string;
@@ -96,7 +97,12 @@ function getThirtyDayMoves(priorities: Priority[]) {
 export default function ReportPage({ params }: { params: { id: string } }) {
   const [, setLocation] = useLocation();
   const id = Number(params.id);
-  const query = trpc.assessment.result.useQuery({ id }, { retry: false });
+  const statusQuery = trpc.assessment.paymentStatus.useQuery({ id }, { retry: false });
+  const approved = statusQuery.data?.paymentStatus === "paid" && statusQuery.data?.status === "approved";
+  const query = trpc.assessment.result.useQuery({ id }, { retry: false, enabled: approved });
+  if (statusQuery.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] text-sm text-[#776e68]">Preparando relatório…</div>;
+  if (statusQuery.data?.paymentStatus !== "paid") return <Redirect to={`/resultado/${id}`} />;
+  if (!approved) return <ReviewPending assessmentId={id} paidAt={statusQuery.data?.paidAt} />;
   if (query.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] text-sm text-[#776e68]">Preparando relatório…</div>;
   if (query.isError || !query.data) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] p-6">Relatório indisponível.</div>;
 

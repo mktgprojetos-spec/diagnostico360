@@ -96,7 +96,7 @@ export const appRouter = router({
     }),
     paymentStatus: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.id);
-      return { paymentStatus: assessment.paymentStatus, status: assessment.status };
+      return { paymentStatus: assessment.paymentStatus, status: assessment.status, paidAt: assessment.paidAt };
     }),
     confirmPayment: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), sessionId: z.string().min(10).max(255) })).mutation(async ({ ctx, input }) => {
       await requireAssessmentOwner(ctx.user.id, input.assessmentId);
@@ -115,6 +115,7 @@ export const appRouter = router({
     result: protectedProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.id);
       if (assessment.paymentStatus !== "paid") throw new TRPCError({ code: "FORBIDDEN", message: "Conclua o pagamento para acessar o resultado completo." });
+      if (assessment.status !== "approved") throw new TRPCError({ code: "FORBIDDEN", message: "O relatório está em revisão e será liberado após a aprovação." });
       const answers = await getAnswers(assessment.id);
       const { calculateDiagnostic } = await import("./diagnostic");
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));

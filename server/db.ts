@@ -110,10 +110,14 @@ export async function setCheckoutSession(assessmentId: number, sessionId: string
   await db.update(assessments).set({ stripeCheckoutSessionId: sessionId, updatedAt: new Date() }).where(eq(assessments.id, assessmentId));
 }
 
+/** Marca como pago uma única vez. Retorna true apenas na primeira confirmação. */
 export async function markAssessmentPaid(assessmentId: number, paymentIntentId: string | null) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
+  const current = await getAssessmentById(assessmentId);
+  if (!current || current.paymentStatus === "paid") return false;
   await db.update(assessments).set({ paymentStatus: "paid", stripePaymentIntentId: paymentIntentId, paidAt: new Date(), updatedAt: new Date() }).where(eq(assessments.id, assessmentId));
+  return true;
 }
 
 export async function recordStripeEvent(eventId: string, type: string) {
