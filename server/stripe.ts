@@ -47,6 +47,7 @@ export async function createAssessmentCheckout(req: Request, user: { id: number;
       customer_name: user.name ?? "",
       customer_email: user.email ?? "",
     },
+    payment_intent_data: { metadata: { assessment_id: String(assessmentId), user_id: String(user.id) } },
     success_url: `${origin}/resultado/${assessmentId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/resultado/${assessmentId}?payment=cancel`,
   });
@@ -70,7 +71,8 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     const firstDelivery = await recordStripeEvent(event.id, event.type);
     if (!firstDelivery) return res.json({ received: true, duplicate: true });
 
-    if (event.type === "checkout.session.completed") {
+    // Pix e outros meios assíncronos: o pagamento só é confirmado em async_payment_succeeded.
+    if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object as Stripe.Checkout.Session;
       const assessmentId = Number(session.metadata?.assessment_id);
       if (Number.isInteger(assessmentId) && session.payment_status === "paid") {
