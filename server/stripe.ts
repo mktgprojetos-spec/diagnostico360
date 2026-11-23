@@ -1,15 +1,17 @@
 import Stripe from "stripe";
 import type { Request, Response } from "express";
-import { markAssessmentPaid as markAssessmentPaidInDb, recordStripeEvent } from "./db";
+import { getAssessmentById, getCompanyById, markAssessmentPaid as markAssessmentPaidInDb, recordStripeEvent } from "./db";
 import { appUrl, sendPaymentReceivedOwnerEmail } from "./email";
 
 async function markAssessmentPaid(assessmentId: number, paymentIntentId: string | null) {
   const firstConfirmation = await markAssessmentPaidInDb(assessmentId, paymentIntentId);
   if (!firstConfirmation) return;
-  await sendPaymentReceivedOwnerEmail({ assessmentId, baseUrl: appUrl() });
+  const assessment = await getAssessmentById(assessmentId);
+  const company = assessment ? await getCompanyById(assessment.companyId) : null;
+  await sendPaymentReceivedOwnerEmail({ companyName: company?.name, baseUrl: appUrl() });
 }
 
-const PRICE_IN_CENTS = 49700;
+import { PRICE_IN_CENTS } from "@shared/product";
 
 function stripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;

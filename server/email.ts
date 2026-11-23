@@ -70,32 +70,31 @@ ${cta ? `<p style="margin:28px 0"><a href="${cta.url}" style="background:#a65e3f
 </div></body></html>`;
 }
 
-const code = (assessmentId: number) => `#${String(assessmentId).padStart(4, "0")}`;
-
 /** E-mail para o cliente quando o relatório é aprovado. */
 export function sendReportReleasedEmail(input: { to: string; responsibleName?: string | null; assessmentId: number; baseUrl: string }) {
   const reportUrl = `${input.baseUrl}/relatorio/${input.assessmentId}`;
   const greeting = input.responsibleName ? `Olá, ${escape(input.responsibleName.split(" ")[0])}!` : "Olá!";
-  const subject = `Seu Diagnóstico Estratégico 360º ${code(input.assessmentId)} está liberado`;
+  const subject = "Seu Diagnóstico Estratégico 360º está liberado";
   const html = layout("Seu relatório final está liberado.", `
 <p>${greeting}</p>
-<p>A revisão do seu Diagnóstico ${code(input.assessmentId)} foi concluída. Conferimos a coerência entre suas respostas, o contexto informado e as prioridades sugeridas, e o relatório final já está disponível na sua área.</p>
+<p>A revisão do seu Diagnóstico Estratégico 360º foi concluída. Conferimos a coerência entre suas respostas, o contexto informado e as prioridades sugeridas, e o relatório final já está disponível na sua área.</p>
 <p>Uma sugestão: leia o relatório com calma e reserve um momento com a liderança para discutir as perguntas estratégicas do final. É ali que a análise começa a virar decisão.</p>`, { label: "Ver meu relatório", url: reportUrl });
-  const text = `${greeting}\n\nA revisão do seu Diagnóstico ${code(input.assessmentId)} foi concluída e o relatório final já está liberado:\n${reportUrl}\n`;
+  const text = `${greeting}\n\nA revisão do seu Diagnóstico Estratégico 360º foi concluída e o relatório final já está liberado:\n${reportUrl}\n`;
   return sendEmail(input.to, subject, html, text);
 }
 
 /** Aviso interno para a responsável quando um pagamento é confirmado. */
-export function sendPaymentReceivedOwnerEmail(input: { assessmentId: number; baseUrl: string }) {
+export function sendPaymentReceivedOwnerEmail(input: { companyName?: string | null; baseUrl: string }) {
   if (!env.ownerEmail) {
     console.warn("[Email] OWNER_NOTIFICATION_EMAIL não configurado; aviso interno não enviado.");
     return Promise.resolve(false);
   }
   const deadline = new Date(Date.now() + REVIEW_SLA_HOURS * 3600000).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-  const subject = `Pagamento confirmado: aprovar Diagnóstico ${code(input.assessmentId)} até ${deadline}`;
-  const html = layout(`Diagnóstico ${code(input.assessmentId)} aguardando sua aprovação`, `
+  const who = input.companyName?.trim() || "novo cliente";
+  const subject = `Pagamento confirmado (${who}): aprovar até ${deadline}`;
+  const html = layout(`Diagnóstico de ${who} aguardando sua aprovação`, `
 <p>O pagamento foi confirmado e o cliente está vendo a tela de revisão final.</p>
 <p><strong>Prazo prometido para liberação: ${deadline}</strong> (${REVIEW_SLA_HOURS}h após o pagamento).</p>`, input.baseUrl ? { label: "Abrir painel administrativo", url: `${input.baseUrl}/admin` } : undefined);
-  const text = `Pagamento confirmado do Diagnóstico ${code(input.assessmentId)}. Aprovar até ${deadline}. Painel: ${input.baseUrl}/admin`;
+  const text = `Pagamento confirmado do diagnóstico de ${who}. Aprovar até ${deadline}. Painel: ${input.baseUrl}/admin`;
   return sendEmail(env.ownerEmail, subject, html, text);
 }

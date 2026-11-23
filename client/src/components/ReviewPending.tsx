@@ -22,7 +22,7 @@ export function ReviewPending({ assessmentId, paidAt }: { assessmentId: number; 
     <div className="mx-auto max-w-4xl">
       <a href="/app" className="flex items-center gap-3 text-sm font-semibold text-[#a65e3f]"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#a65e3f] text-xs font-bold text-white">D3</span>Voltar para minha área</a>
       <div className="mt-10 rounded-[2rem] bg-[#2a2622] p-7 text-[#faf8f5] sm:p-10">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#eadfd6]">Diagnóstico #{String(assessmentId).padStart(4, "0")} · pagamento confirmado</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#eadfd6]">Pagamento confirmado</p>
         <h1 className="mt-4 font-serif text-4xl tracking-[-0.03em] sm:text-5xl">Seu diagnóstico está em revisão final.</h1>
         <p className="mt-5 max-w-2xl text-lg leading-8 text-[#dfd5ce]">Obrigada pela confiança. {deadline === "overdue" ? "Estamos concluindo" : `O relatório final será liberado em até ${REVIEW_SLA_HOURS} horas, depois de`} uma revisão cuidadosa das suas respostas e da análise gerada{deadline === "overdue" ? " para liberar o seu relatório final" : ""}.</p>
         <div className="mt-8 flex items-center gap-3 rounded-2xl bg-white/10 p-4 text-sm">

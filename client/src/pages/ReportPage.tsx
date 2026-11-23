@@ -106,7 +106,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   if (query.isLoading) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] text-sm text-[#776e68]">Preparando relatório…</div>;
   if (query.isError || !query.data) return <div className="flex min-h-screen items-center justify-center bg-[#faf8f5] p-6">Relatório indisponível.</div>;
 
-  const { result, assessment } = query.data;
+  const { result, assessment, companyName } = query.data;
   const dimensions = result.dimensions as Dimension[];
   const priorities = result.priorities as Priority[];
   const summary = getExecutiveSummary(result.overallScore, result.confidenceLabel, priorities);
@@ -128,7 +128,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
     <article className="mx-auto max-w-4xl bg-white px-8 py-12 shadow-sm sm:px-14 sm:py-16 print:max-w-none print:shadow-none">
       <header className="border-b-2 border-[#a65e3f] pb-10">
         <div className="flex items-start justify-between gap-6">
-          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Diagnóstico Estratégico 360º</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">Avaliação #{String(assessment.id).padStart(4, "0")} · versão {assessment.version}</p></div>
+          <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#a65e3f]">Diagnóstico Estratégico 360º</p><h1 className="mt-5 max-w-2xl font-serif text-5xl tracking-[-0.04em]">Relatório de diagnóstico</h1><p className="mt-4 text-[#776e68]">{companyName ?? "Relatório personalizado"}</p></div>
           <div className="text-right text-sm text-[#776e68]"><p>Concluído em</p><p className="font-semibold text-[#2a2622]">{new Date(assessment.submittedAt ?? assessment.updatedAt).toLocaleDateString("pt-BR")}</p></div>
         </div>
       </header>

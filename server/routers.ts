@@ -120,7 +120,8 @@ export const appRouter = router({
       const answers = await getAnswers(assessment.id);
       const { calculateDiagnostic } = await import("./diagnostic");
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));
-      return { assessment, answers, result: calculateDiagnostic(answerMap, assessment.version) };
+      const company = await getCompanyById(assessment.companyId);
+      return { assessment, answers, companyName: company?.name ?? null, result: calculateDiagnostic(answerMap, assessment.version) };
     }),
   }),
   admin: router({
