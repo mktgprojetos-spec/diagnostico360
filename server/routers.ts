@@ -7,7 +7,7 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments, companies } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
-import { confirmAssessmentCheckout, createAssessmentCheckout } from "./stripe";
+import { confirmAssessmentCheckout, createAssessmentCheckout } from "./mercadopago";
 import { calculateDiagnostic } from "./diagnostic";
 import { appUrl, sendReportReleasedEmail } from "./email";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
@@ -99,9 +99,9 @@ export const appRouter = router({
       const assessment = await requireAssessmentOwner(ctx.user.id, input.id);
       return { paymentStatus: assessment.paymentStatus, status: assessment.status, paidAt: assessment.paidAt };
     }),
-    confirmPayment: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), sessionId: z.string().min(10).max(255) })).mutation(async ({ ctx, input }) => {
+    confirmPayment: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), paymentId: z.string().regex(/^\d{1,30}$/) })).mutation(async ({ ctx, input }) => {
       await requireAssessmentOwner(ctx.user.id, input.assessmentId);
-      const paid = await confirmAssessmentCheckout(input.sessionId, input.assessmentId);
+      const paid = await confirmAssessmentCheckout(input.paymentId, input.assessmentId);
       return { paid };
     }),
     checkout: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
@@ -109,7 +109,6 @@ export const appRouter = router({
       if (assessment.status === "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Finalize o preenchimento do diagnóstico antes de realizar o pagamento." });
       if (assessment.paymentStatus === "paid") return { paid: true as const, url: null };
       const session = await createAssessmentCheckout(ctx.req, ctx.user, assessment.id);
-      if (!session.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Não foi possível iniciar o pagamento." });
       await setCheckoutSession(assessment.id, session.id);
       return { paid: false as const, url: session.url };
     }),

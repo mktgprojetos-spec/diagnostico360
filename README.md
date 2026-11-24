@@ -33,3 +33,18 @@ Configure estas variáveis de ambiente (secrets) na hospedagem:
 | `PUBLIC_APP_URL` | `https://raiox360-lfbgosfs.manus.space` |
 
 Sem essas variáveis o sistema continua funcionando; apenas os e-mails não são enviados (o painel avisa para usar o WhatsApp).
+
+## Pagamentos (Mercado Pago Checkout Pro)
+
+O pagamento usa o Mercado Pago (`server/mercadopago.ts`): Pix e cartão de crédito em até 12x.
+Quantas parcelas são **sem juros** é definido na própria conta Mercado Pago
+("Parcelamento sem juros" → "Código QR e pagamentos on-line"). Hoje: até 3x sem juros.
+
+| Variável | Onde encontrar |
+| --- | --- |
+| `MERCADOPAGO_ACCESS_TOKEN` | Suas integrações → sua aplicação → Credenciais (teste: `TEST-…`; produção: `APP_USR-…`) |
+| `MERCADOPAGO_WEBHOOK_SECRET` | Suas integrações → sua aplicação → Webhooks → assinatura secreta |
+
+Webhook: `https://SEU-DOMINIO/api/mercadopago/webhook`, evento **Pagamentos**.
+O pagamento é sempre reconsultado na API antes de liberar o diagnóstico.
+As colunas `stripe*` do banco foram mantidas (sem migração) e passam a guardar os IDs do Mercado Pago.
