@@ -5,7 +5,7 @@ import { DIAGNOSTIC_VERSION } from "@shared/diagnostic";
 import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getUserById, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { assessments, companies } from "../drizzle/schema";
+import { assessments, companies, users } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { confirmAssessmentCheckout, createAssessmentCheckout } from "./mercadopago";
 import { calculateDiagnostic } from "./diagnostic";
@@ -69,7 +69,8 @@ export const appRouter = router({
       const company = await getCompanyForUser(ctx.user.id);
       if (!company) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Cadastre a empresa antes de iniciar." });
       const latestSubmitted = await getLatestSubmittedAssessment(ctx.user.id);
-      if (latestSubmitted?.submittedAt) {
+      // Administradoras podem criar diagnósticos de teste a qualquer momento.
+      if (latestSubmitted?.submittedAt && ctx.user.role !== "admin") {
         const availableAt = latestSubmitted.submittedAt.getTime() + 90 * 24 * 60 * 60 * 1000;
         if (Date.now() < availableAt) throw new TRPCError({ code: "PRECONDITION_FAILED", message: `Uma nova avaliação estará disponível a partir de ${new Date(availableAt).toLocaleDateString("pt-BR")}. Para revisar cenários antes disso, agende o Planejamento Estratégico Inteligente.` });
       }
@@ -127,8 +128,9 @@ export const appRouter = router({
     list: adminProcedure.query(async () => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível." });
-      const rows = await db.select({ assessment: assessments, companyName: companies.name, responsibleName: companies.responsibleName, phone: companies.phone }).from(assessments).leftJoin(companies, eq(assessments.companyId, companies.id)).orderBy(desc(assessments.updatedAt));
-      return rows.map(row => ({ ...row.assessment, companyName: row.companyName, responsibleName: row.responsibleName, phone: row.phone }));
+      const rows = await db.select({ assessment: assessments, companyName: companies.name, responsibleName: companies.responsibleName, phone: companies.phone, ownerRole: users.role }).from(assessments).leftJoin(companies, eq(assessments.companyId, companies.id)).leftJoin(users, eq(assessments.userId, users.id)).orderBy(desc(assessments.updatedAt));
+      // Diagnósticos feitos por contas administradoras são testes e ficam fora das métricas.
+      return rows.map(row => ({ ...row.assessment, companyName: row.companyName, responsibleName: row.responsibleName, phone: row.phone, isTest: row.ownerRole === "admin" }));
     }),
     detail: adminProcedure.input(z.object({ assessmentId: z.number().int().positive() })).query(async ({ input }) => {
       const assessment = await getAssessmentById(input.assessmentId);

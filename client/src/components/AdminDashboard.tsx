@@ -9,6 +9,7 @@ type Row = {
   updatedAt: Date | string;
   submittedAt: Date | string | null;
   paidAt: Date | string | null;
+  isTest?: boolean;
 };
 
 const SLA_MS = REVIEW_SLA_HOURS * 3600000;
@@ -22,8 +23,10 @@ export function internalNumbers(rows: Pick<Row, "id" | "createdAt">[]) {
   return map;
 }
 
-export function AdminDashboard({ rows }: { rows: Row[] }) {
+export function AdminDashboard({ rows: allRows }: { rows: Row[] }) {
   const now = Date.now();
+  const rows = allRows.filter(row => !row.isTest);
+  const testCount = allRows.length - rows.length;
   const submitted = rows.filter(row => row.status !== "draft");
   const paid = rows.filter(row => row.paymentStatus === "paid");
   const released = paid.filter(row => row.status === "approved");
@@ -50,6 +53,7 @@ export function AdminDashboard({ rows }: { rows: Row[] }) {
   ];
 
   return <section className="mt-10 space-y-5">
+    {testCount > 0 && <p className="text-xs text-[#776e68]">{testCount} {testCount === 1 ? "diagnóstico de teste (feito por conta administradora) não entra" : "diagnósticos de teste (feitos por contas administradoras) não entram"} nas métricas.</p>}
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <Card icon={<CheckCircle2 className="h-5 w-5" />} label="Relatórios liberados" value={String(released.length)} hint={`${paid.length} pagos no total`} />
       <Card icon={<Clock3 className="h-5 w-5" />} label="Aguardando aprovação" value={String(awaiting.length)} hint={overdue.length ? `${overdue.length} com prazo vencido` : "Nenhum prazo vencido"} alert={overdue.length > 0} />
