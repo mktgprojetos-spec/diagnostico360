@@ -48,3 +48,10 @@ Quantas parcelas são **sem juros** é definido na própria conta Mercado Pago
 Webhook: `https://SEU-DOMINIO/api/mercadopago/webhook`, evento **Pagamentos**.
 O pagamento é sempre reconsultado na API antes de liberar o diagnóstico.
 As colunas `stripe*` do banco foram mantidas (sem migração) e passam a guardar os IDs do Mercado Pago.
+
+## Acesso de administradora
+
+- A conta dona do projeto no Manus (`OWNER_OPEN_ID`) é administradora automaticamente.
+- Outras contas: secret `ADMIN_EMAILS` com e-mails separados por vírgula (ex.: `mkt.gprojetos@gmail.com`). Vale a partir do próximo login.
+- Alternativa sem conta Manus: `/admin-login`, usuário `admin` e senha do secret `ADMIN_PASSWORD`.
+- Administradoras criam diagnósticos de teste sem a regra dos 90 dias; eles ficam marcados como "Teste" e fora das métricas.

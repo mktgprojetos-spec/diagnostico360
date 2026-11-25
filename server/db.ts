@@ -17,6 +17,13 @@ export async function getDb() {
   return _db;
 }
 
+/** E-mails com acesso de administradora, definidos no secret ADMIN_EMAILS (separados por vírgula). */
+export function isConfiguredAdminEmail(email: string | null | undefined) {
+  if (!email) return false;
+  const allowed = (process.env.ADMIN_EMAILS ?? "").split(",").map(item => item.trim().toLowerCase()).filter(Boolean);
+  return allowed.includes(email.trim().toLowerCase());
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
@@ -37,7 +44,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   if (user.role !== undefined) {
     values.role = user.role;
     updateSet.role = user.role;
-  } else if (user.openId === ENV.ownerOpenId) {
+  } else if (user.openId === ENV.ownerOpenId || isConfiguredAdminEmail(user.email)) {
     values.role = 'admin';
     updateSet.role = 'admin';
   }
