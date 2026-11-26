@@ -10,7 +10,7 @@ import { desc, eq } from "drizzle-orm";
 import { confirmAssessmentCheckout, createAssessmentCheckout, markAssessmentPaid } from "./mercadopago";
 import { checkCoupon, couponPaymentId } from "./coupons";
 import { calculateDiagnostic } from "./diagnostic";
-import { appUrl, sendReportReleasedEmail } from "./email";
+import { appUrl, lastEmailError, sendReportReleasedEmail, sendTestEmail } from "./email";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
 
 const companyInput = z.object({
@@ -161,6 +161,7 @@ export const appRouter = router({
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));
       return { assessment, answers, company, result: calculateDiagnostic(answerMap, assessment.version) };
     }),
+    testEmail: adminProcedure.input(z.object({ to: z.string().email().max(320) })).mutation(async ({ input }) => sendTestEmail(input.to)),
     setTest: adminProcedure.input(z.object({ assessmentId: z.number().int().positive(), isTest: z.boolean() })).mutation(async ({ input }) => {
       const assessment = await getAssessmentById(input.assessmentId);
       if (!assessment) throw new TRPCError({ code: "NOT_FOUND", message: "Avaliação não encontrada." });
@@ -171,12 +172,12 @@ export const appRouter = router({
       const before = await getAssessmentById(input.assessmentId);
       if (!before) throw new TRPCError({ code: "NOT_FOUND", message: "Avaliação não encontrada." });
       await addReview(input.assessmentId, ctx.user.id, input.status, input.note);
-      if (input.status !== "approved" || before.status === "approved") return { approved: input.status === "approved", emailSent: false, emailTo: null };
+      if (input.status !== "approved" || before.status === "approved") return { approved: input.status === "approved", emailSent: false, emailTo: null, emailError: null };
       const company = await getCompanyById(before.companyId);
       const owner = await getUserById(before.userId);
       const emailTo = company?.email || owner?.email || null;
       const emailSent = emailTo ? await sendReportReleasedEmail({ to: emailTo, responsibleName: company?.responsibleName ?? owner?.name, assessmentId: before.id, baseUrl: appUrl(ctx.req.get("origin")) }) : false;
-      return { approved: true, emailSent, emailTo };
+      return { approved: true, emailSent, emailTo, emailError: emailSent ? null : lastEmailError() };
     }),
   }),
 });

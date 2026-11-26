@@ -32,25 +32,49 @@ function getTransporter() {
       host: env.host,
       port: env.port,
       secure: env.port === 465,
-      auth: { user: env.user, pass: env.pass },
+      auth: { user: env.user, pass: env.pass.replace(/\s+/g, "") },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
     });
   }
   return transporter;
 }
 
+let lastError: string | null = null;
+/** Motivo da última falha de envio (sem dados sensíveis), para diagnóstico no painel admin. */
+export function lastEmailError() { return lastError; }
+
+function describeError(error: unknown) {
+  const e = error as { code?: string; responseCode?: number; command?: string; message?: string };
+  const parts = [e.code, e.responseCode ? `SMTP ${e.responseCode}` : null, e.command, e.message].filter(Boolean);
+  return parts.join(" · ").replace(env.pass, "***").slice(0, 400) || "erro desconhecido";
+}
+
 /** Envia um e-mail. Nunca lança erro: retorna false se não estiver configurado ou se falhar. */
 export async function sendEmail(to: string, subject: string, html: string, text: string) {
   if (!isEmailConfigured()) {
+    lastError = "SMTP não configurado (faltam SMTP_HOST, SMTP_USER, SMTP_PASS ou EMAIL_FROM).";
     console.warn("[Email] SMTP não configurado; e-mail não enviado:", subject);
     return false;
   }
   try {
     await getTransporter().sendMail({ from: env.from, to, subject, html, text });
+    lastError = null;
     return true;
   } catch (error) {
+    lastError = describeError(error);
+    transporter = null;
     console.error("[Email] Falha ao enviar:", subject, error);
     return false;
   }
+}
+
+/** Diagnóstico do envio: tenta mandar uma mensagem de teste e devolve o motivo se falhar. */
+export async function sendTestEmail(to: string) {
+  const config = { host: env.host || null, port: env.port, user: env.user || null, from: env.from || null, hasPassword: Boolean(env.pass), appUrl: env.appUrl || null };
+  const ok = await sendEmail(to, "Teste de e-mail · Diagnóstico Estratégico 360º", "<p>Se você recebeu esta mensagem, o envio automático de e-mails está funcionando.</p>", "Se você recebeu esta mensagem, o envio automático de e-mails está funcionando.");
+  return { ok, error: ok ? null : lastError, config };
 }
 
 export function appUrl(fallbackOrigin?: string | null) {
