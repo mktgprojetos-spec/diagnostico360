@@ -61,3 +61,7 @@ As colunas `stripe*` do banco foram mantidas (sem migração) e passam a guardar
 - No `/admin`, o botão **Marcar como teste** tira um diagnóstico das métricas do dashboard (coluna `assessments.isTest`, migração `0006`).
 - Diagnósticos feitos por contas administradoras já contam como teste automaticamente.
 - Ao publicar esta versão, rode `pnpm db:migrate` para criar a coluna.
+
+## Publicação (um comando)
+
+`pnpm release` roda, em ordem: `pnpm install`, `pnpm db:migrate`, typecheck, testes e build. Se terminar sem erro, é só publicar.

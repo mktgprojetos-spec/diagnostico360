@@ -93,4 +93,12 @@ describe("Mercado Pago", () => {
     await expect(confirmAssessmentCheckout("125", 7)).resolves.toBe(false);
     expect(markPaid).not.toHaveBeenCalled();
   });
+
+  it("answers 200 to notifications about payments that do not exist (panel simulation)", async () => {
+    paymentGet.mockRejectedValue({ status: 404, message: "Payment not found" });
+    const res = fakeRes();
+    await handleMercadoPagoWebhook(fakeReq({ "data.id": "123456", type: "payment" }, { "x-signature": sign("123456", "req-9", "segredo"), "x-request-id": "req-9" }), res as never);
+    expect(res.statusCode).toBe(200);
+    expect(markPaid).not.toHaveBeenCalled();
+  });
 });

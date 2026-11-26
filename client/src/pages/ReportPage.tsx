@@ -22,7 +22,7 @@ type Priority = {
   nextStep: string;
 };
 
-function getExecutiveSummary(score: number | null, confidence: string, priorities: Priority[]) {
+function getExecutiveSummary(score: number | null, confidence: string, priorities: Priority[], dimensions: Dimension[] = []) {
   const lead = score === null
     ? "As respostas ainda não formam uma base suficiente para uma visão geral segura."
     : score < 50
@@ -30,7 +30,11 @@ function getExecutiveSummary(score: number | null, confidence: string, prioritie
       : score < 75
         ? "A empresa apresenta algumas bases importantes, mas ainda existem conexões frágeis entre direção, execução e acompanhamento."
         : "A empresa apresenta uma base consistente para avançar, com oportunidades de integração entre as áreas avaliadas.";
-  const focus = priorities[0]?.title
+  const scored = dimensions.filter(item => item.score !== null).map(item => item.score as number);
+  const balanced = scored.length > 1 && Math.max(...scored) - Math.min(...scored) < 10;
+  const focus = balanced
+    ? "Os pontos de atenção estão distribuídos de forma equilibrada entre as dimensões, sem uma área isolada que concentre o problema."
+    : priorities[0]?.title
     ? `O principal ponto de atenção aparece em ${priorities[0].title.toLowerCase()}.`
     : "O principal ponto de atenção ainda precisa ser definido com mais informação.";
   return `${lead} ${focus} Esta análise tem nível de segurança ${confidence.toLowerCase()} e deve orientar uma conversa de decisão, não substituir uma análise aprofundada da operação.`;
@@ -109,7 +113,7 @@ export default function ReportPage({ params }: { params: { id: string } }) {
   const { result, assessment, companyName } = query.data;
   const dimensions = result.dimensions as Dimension[];
   const priorities = result.priorities as Priority[];
-  const summary = getExecutiveSummary(result.overallScore, result.confidenceLabel, priorities);
+  const summary = getExecutiveSummary(result.overallScore, result.confidenceLabel, priorities, result.dimensions);
   const centralPattern = getCentralPattern(dimensions, priorities);
   const moves = getThirtyDayMoves(priorities);
   const contextMoments = assessment.contextMoments ? JSON.parse(assessment.contextMoments) as string[] : [];

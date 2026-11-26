@@ -106,6 +106,8 @@ export async function handleMercadoPagoWebhook(req: Request, res: Response) {
   try {
     await syncPayment(dataId);
   } catch (error) {
+    // Pagamento inexistente (ex.: "Simular notificação" do painel): responde OK para o Mercado Pago não reenviar.
+    if ((error as { status?: number })?.status === 404) return res.status(200).json({ received: true, ignored: true });
     console.error("[MercadoPago] Falha ao processar notificação", error);
     return res.status(500).send("Falha ao processar notificação.");
   }
