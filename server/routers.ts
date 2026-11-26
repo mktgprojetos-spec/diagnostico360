@@ -7,7 +7,8 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments, companies, users } from "../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
-import { confirmAssessmentCheckout, createAssessmentCheckout } from "./mercadopago";
+import { confirmAssessmentCheckout, createAssessmentCheckout, markAssessmentPaid } from "./mercadopago";
+import { checkCoupon, couponPaymentId } from "./coupons";
 import { calculateDiagnostic } from "./diagnostic";
 import { appUrl, sendReportReleasedEmail } from "./email";
 import { ADMIN_COOKIE_NAME, ADMIN_COOKIE_OPTIONS, createAdminSession, verifyAdminCredentials } from "./adminAuth";
@@ -105,11 +106,30 @@ export const appRouter = router({
       const paid = await confirmAssessmentCheckout(input.paymentId, input.assessmentId);
       return { paid };
     }),
-    checkout: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    applyCoupon: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), code: z.string().min(2).max(40) })).mutation(async ({ ctx, input }) => {
+      const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
+      if (assessment.status === "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Finalize o preenchimento do diagnóstico antes de usar o cupom." });
+      const check = checkCoupon(input.code);
+      if (!check.ok) throw new TRPCError({ code: "BAD_REQUEST", message: check.message });
+      if (assessment.paymentStatus === "paid") return { paid: true as const, percentOff: check.coupon.percentOff, priceInCents: 0 };
+      if (check.priceInCents === 0) {
+        await markAssessmentPaid(assessment.id, couponPaymentId(check.coupon));
+        return { paid: true as const, percentOff: check.coupon.percentOff, priceInCents: 0 };
+      }
+      return { paid: false as const, percentOff: check.coupon.percentOff, priceInCents: check.priceInCents };
+    }),
+    checkout: protectedProcedure.input(z.object({ assessmentId: z.number().int().positive(), couponCode: z.string().max(40).optional() })).mutation(async ({ ctx, input }) => {
       const assessment = await requireAssessmentOwner(ctx.user.id, input.assessmentId);
       if (assessment.status === "draft") throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Finalize o preenchimento do diagnóstico antes de realizar o pagamento." });
       if (assessment.paymentStatus === "paid") return { paid: true as const, url: null };
-      const session = await createAssessmentCheckout(ctx.req, ctx.user, assessment.id);
+      let priceInCents: number | undefined;
+      if (input.couponCode) {
+        const check = checkCoupon(input.couponCode);
+        if (!check.ok) throw new TRPCError({ code: "BAD_REQUEST", message: check.message });
+        if (check.priceInCents === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "Este cupom zera o valor: use o botão Aplicar cupom." });
+        priceInCents = check.priceInCents;
+      }
+      const session = await createAssessmentCheckout(ctx.req, ctx.user, assessment.id, priceInCents);
       await setCheckoutSession(assessment.id, session.id);
       return { paid: false as const, url: session.url };
     }),

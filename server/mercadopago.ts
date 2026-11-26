@@ -32,7 +32,8 @@ function browserOrigin(req: Request) {
   throw new Error("Não foi possível identificar o endereço público do site.");
 }
 
-async function markAssessmentPaid(assessmentId: number, paymentId: string | null) {
+/** Libera a avaliação como paga (uma única vez) e avisa a responsável. Usado pelo Mercado Pago e pelos cupons. */
+export async function markAssessmentPaid(assessmentId: number, paymentId: string | null) {
   const firstConfirmation = await markAssessmentPaidInDb(assessmentId, paymentId);
   if (!firstConfirmation) return;
   const assessment = await getAssessmentById(assessmentId);
@@ -40,7 +41,7 @@ async function markAssessmentPaid(assessmentId: number, paymentId: string | null
   await sendPaymentReceivedOwnerEmail({ companyName: company?.name, baseUrl: appUrl() });
 }
 
-export async function createAssessmentCheckout(req: Request, user: { id: number; name?: string | null; email?: string | null }, assessmentId: number) {
+export async function createAssessmentCheckout(req: Request, user: { id: number; name?: string | null; email?: string | null }, assessmentId: number, priceInCents: number = PRICE_IN_CENTS) {
   const origin = browserOrigin(req);
   const back = `${origin}/resultado/${assessmentId}`;
   const preference = await new Preference(config()).create({
@@ -50,13 +51,14 @@ export async function createAssessmentCheckout(req: Request, user: { id: number;
         title: "Diagnóstico Estratégico 360º",
         description: "Diagnóstico estratégico com relatório personalizado",
         quantity: 1,
-        unit_price: PRICE_IN_CENTS / 100,
+        unit_price: priceInCents / 100,
         currency_id: "BRL",
       }],
       payer: user.email ? { email: user.email, name: user.name ?? undefined } : undefined,
       external_reference: String(assessmentId),
       metadata: { assessment_id: String(assessmentId), user_id: String(user.id) },
-      payment_methods: { installments: MAX_INSTALLMENTS },
+      // Boleto e pagamento em lotérica desativados: apenas cartão e Pix.
+      payment_methods: { installments: MAX_INSTALLMENTS, excluded_payment_types: [{ id: "ticket" }, { id: "atm" }] },
       back_urls: { success: `${back}?payment=success`, pending: `${back}?payment=pending`, failure: `${back}?payment=failure` },
       auto_return: "approved",
       notification_url: `${origin}/api/mercadopago/webhook`,

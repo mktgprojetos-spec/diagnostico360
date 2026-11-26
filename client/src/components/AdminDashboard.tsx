@@ -10,7 +10,10 @@ type Row = {
   submittedAt: Date | string | null;
   paidAt: Date | string | null;
   isTest?: boolean;
+  stripePaymentIntentId?: string | null;
 };
+
+export const isCouponRow = (row: { stripePaymentIntentId?: string | null }) => Boolean(row.stripePaymentIntentId?.startsWith("cupom:"));
 
 const SLA_MS = REVIEW_SLA_HOURS * 3600000;
 const currency = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -32,7 +35,8 @@ export function AdminDashboard({ rows: allRows }: { rows: Row[] }) {
   const released = paid.filter(row => row.status === "approved");
   const awaiting = paid.filter(row => row.status !== "approved");
   const overdue = awaiting.filter(row => row.paidAt && now > ms(row.paidAt) + SLA_MS);
-  const revenue = paid.length * (PRICE_IN_CENTS / 100);
+  const couponPaid = paid.filter(isCouponRow);
+  const revenue = (paid.length - couponPaid.length) * (PRICE_IN_CENTS / 100);
   const conversion = submitted.length ? Math.round((paid.length / submitted.length) * 100) : 0;
   const releaseTimes = released.filter(row => row.paidAt).map(row => (ms(row.updatedAt) - ms(row.paidAt!)) / 3600000).filter(hours => hours >= 0);
   const avgRelease = releaseTimes.length ? releaseTimes.reduce((sum, hours) => sum + hours, 0) / releaseTimes.length : null;
@@ -57,7 +61,7 @@ export function AdminDashboard({ rows: allRows }: { rows: Row[] }) {
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <Card icon={<CheckCircle2 className="h-5 w-5" />} label="Relatórios liberados" value={String(released.length)} hint={`${paid.length} pagos no total`} />
       <Card icon={<Clock3 className="h-5 w-5" />} label="Aguardando aprovação" value={String(awaiting.length)} hint={overdue.length ? `${overdue.length} com prazo vencido` : "Nenhum prazo vencido"} alert={overdue.length > 0} />
-      <Card icon={<Wallet className="h-5 w-5" />} label="Receita confirmada" value={currency(revenue)} hint={`${currency(PRICE_IN_CENTS / 100)} por diagnóstico`} />
+      <Card icon={<Wallet className="h-5 w-5" />} label="Receita confirmada" value={currency(revenue)} hint={couponPaid.length ? `${couponPaid.length} liberado(s) por cupom, sem receita` : `${currency(PRICE_IN_CENTS / 100)} por diagnóstico`} />
       <Card icon={<TrendingUp className="h-5 w-5" />} label="Conversão em pagamento" value={`${conversion}%`} hint={`${paid.length} de ${submitted.length} enviados`} />
     </div>
 

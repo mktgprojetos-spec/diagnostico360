@@ -51,6 +51,7 @@ describe("Mercado Pago", () => {
     expect(result).toEqual({ id: "pref_1", url: "https://mp/checkout" });
     const body = preferenceCreate.mock.calls[0][0].body;
     expect(body.payment_methods.installments).toBe(12);
+    expect(body.payment_methods.excluded_payment_types).toEqual([{ id: "ticket" }, { id: "atm" }]);
     expect(body.external_reference).toBe("7");
     expect(body.items[0].unit_price).toBe(497);
     expect(body.notification_url).toBe("https://site.com/api/mercadopago/webhook");
