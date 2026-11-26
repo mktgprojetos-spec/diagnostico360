@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar, uniqueIndex } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -44,6 +44,8 @@ export const assessments = mysqlTable("assessments", {
   contextMoments: text("contextMoments"),
   contextChallenge: text("contextChallenge"),
   contextExpectation: text("contextExpectation"),
+  /** Marcado manualmente no admin: fica fora das métricas do dashboard. */
+  isTest: boolean("isTest").default(false).notNull(),
   submittedAt: timestamp("submittedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

@@ -188,3 +188,9 @@ export async function addReview(assessmentId: number, reviewerId: number, status
   await db.insert(assessmentReviews).values({ assessmentId, reviewerId, status, note });
   await db.update(assessments).set({ status: status === "approved" ? "approved" : "in_review", updatedAt: new Date() }).where(eq(assessments.id, assessmentId));
 }
+
+export async function setAssessmentTest(assessmentId: number, isTest: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(assessments).set({ isTest }).where(eq(assessments.id, assessmentId));
+}

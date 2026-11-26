@@ -55,3 +55,9 @@ As colunas `stripe*` do banco foram mantidas (sem migração) e passam a guardar
 - Outras contas: secret `ADMIN_EMAILS` com e-mails separados por vírgula (ex.: `mkt.gprojetos@gmail.com`). Vale a partir do próximo login.
 - Alternativa sem conta Manus: `/admin-login`, usuário `admin` e senha do secret `ADMIN_PASSWORD`.
 - Administradoras criam diagnósticos de teste sem a regra dos 90 dias; eles ficam marcados como "Teste" e fora das métricas.
+
+## Diagnósticos de teste
+
+- No `/admin`, o botão **Marcar como teste** tira um diagnóstico das métricas do dashboard (coluna `assessments.isTest`, migração `0006`).
+- Diagnósticos feitos por contas administradoras já contam como teste automaticamente.
+- Ao publicar esta versão, rode `pnpm db:migrate` para criar a coluna.

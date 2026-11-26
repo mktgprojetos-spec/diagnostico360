@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { DIAGNOSTIC_VERSION } from "@shared/diagnostic";
-import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getUserById, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
+import { addReview, createAssessment, getAnswers, getAssessmentById, getAssessmentForUser, getAssessmentsForUser, getCompanyById, getCompanyForUser, getUserById, setAssessmentTest, getDb, getLatestSubmittedAssessment, saveAnswers, saveCompany, setCheckoutSession } from "./db";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { assessments, companies, users } from "../drizzle/schema";
@@ -150,7 +150,7 @@ export const appRouter = router({
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Banco indisponível." });
       const rows = await db.select({ assessment: assessments, companyName: companies.name, responsibleName: companies.responsibleName, phone: companies.phone, ownerRole: users.role }).from(assessments).leftJoin(companies, eq(assessments.companyId, companies.id)).leftJoin(users, eq(assessments.userId, users.id)).orderBy(desc(assessments.updatedAt));
       // Diagnósticos feitos por contas administradoras são testes e ficam fora das métricas.
-      return rows.map(row => ({ ...row.assessment, companyName: row.companyName, responsibleName: row.responsibleName, phone: row.phone, isTest: row.ownerRole === "admin" }));
+      return rows.map(row => ({ ...row.assessment, companyName: row.companyName, responsibleName: row.responsibleName, phone: row.phone, isTest: row.assessment.isTest || row.ownerRole === "admin", fromAdminAccount: row.ownerRole === "admin" }));
     }),
     detail: adminProcedure.input(z.object({ assessmentId: z.number().int().positive() })).query(async ({ input }) => {
       const assessment = await getAssessmentById(input.assessmentId);
@@ -160,6 +160,12 @@ export const appRouter = router({
       const { calculateDiagnostic } = await import("./diagnostic");
       const answerMap = Object.fromEntries(answers.map(answer => [answer.questionId, answer.value]));
       return { assessment, answers, company, result: calculateDiagnostic(answerMap, assessment.version) };
+    }),
+    setTest: adminProcedure.input(z.object({ assessmentId: z.number().int().positive(), isTest: z.boolean() })).mutation(async ({ input }) => {
+      const assessment = await getAssessmentById(input.assessmentId);
+      if (!assessment) throw new TRPCError({ code: "NOT_FOUND", message: "Avaliação não encontrada." });
+      await setAssessmentTest(input.assessmentId, input.isTest);
+      return { isTest: input.isTest };
     }),
     approve: adminProcedure.input(z.object({ assessmentId: z.number().int().positive(), status: z.enum(["needs_review", "approved"]), note: z.string().max(2000).nullable() })).mutation(async ({ ctx, input }) => {
       const before = await getAssessmentById(input.assessmentId);
